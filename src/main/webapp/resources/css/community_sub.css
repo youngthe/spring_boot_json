@@ -1,0 +1,105 @@
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+section.notice {
+    padding: 80px 0;
+}
+
+.board-table {
+    font-size: 13px;
+    width: 100%;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+}
+
+.board-table th {
+    text-align: center;
+}
+
+.board-table th, .board-table td {
+    padding: 14px 0;
+    border-right: 1px solid #ccc;
+}
+
+.board-table td {
+    border-top: 1px solid #e7e7e7;
+    padding-right: 14px;
+    padding-left: 14px;
+    text-align: left;
+}
+
+.board-table th {
+    border-top: 1px solid #e7e7e7;
+    text-align: center;
+}
+
+.board-table tbody th p{
+    display: none;
+}
+
+
+/* reset */
+
+* {
+    list-style: none;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.clearfix:after {
+    content: '';
+    display: block;
+    clear: both;
+}
+.container {
+    width: 800px;
+    margin: 0 auto;
+}
+.blind {
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    margin: -1px;
+    width: 1px;
+    height: 1px;
+}
+
+.bottom{
+    display: flex;
+    justify-content: right;
+}
+
+.bottom input{
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.table_comments{
+
+    border-top: 2px solid #333333;
+    margin-top: 50px;
+    width: 500px;
+}
+
+.table_comments th{
+    text-align: left;
+}
+.table_comments td{
+    width: 70px;
+}
+
+.table_comments #board-comment{
+    font-weight: normal;
+    border-bottom: 1px solid #ccc;
+    padding-left: 5px;
+    padding-top:5px;
+    padding-bottom: 15px;
+}
+
+.table_comments #date{
+    font-size: 7pt;
+}
