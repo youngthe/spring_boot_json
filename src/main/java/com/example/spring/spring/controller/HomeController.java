@@ -36,12 +36,12 @@ public class HomeController {
 
 
     @RequestMapping(value = "/")
-    public String login(HttpSession session){
+    public HashMap login(HttpSession session){
 
-        if(session.getAttribute("user") != null){
-            return "redirect:/community";
-        }
-        return "login";
+        HashMap<String, Object> result = new HashMap<>();
+
+        result.put("message", "hello");
+        return result;
 
 
     }
@@ -60,13 +60,13 @@ public class HomeController {
             UserTb user = userRepository.getUserTbByAccount(account);
             String get_pw = user.getPw();
             if(passwordEncoder.matches(pw, get_pw)){
-                result.put("resultCode", "Success");
+                result.put("resultCode", "true");
                 result.put("jwt", jwtTokenProvider.createToken(user));
                 return result;
             }
 
         }catch(Exception e){
-            result.put("resultCode", "Bad");
+            result.put("resultCode", "false");
             return result;
         }
         return result;
@@ -92,14 +92,15 @@ public class HomeController {
                 userTb.setPw(passwordEncoder.encode(pw));
                 userTb.setName(name);
                 userRepository.save(userTb);
-                result.put("resultCode", "Success");
+                result.put("resultCode", "true");
                 return result;
             }catch(Exception e){
-                result.put("resultCode", "Bad");
+                result.put("resultCode", "false");
                 return result;
             }
         }else{
-            result.put("resultCode", "already");
+            result.put("message", "already");
+            result.put("resultCode", "false");
             return result;
         }
     }
@@ -112,8 +113,4 @@ public class HomeController {
         return "login";
     }
 
-    @RequestMapping(value = "/test")
-    public String popup(){
-        return "popup";
-    }
 }

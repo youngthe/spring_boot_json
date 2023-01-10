@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import javax.transaction.Transactional;
+import java.awt.*;
 import java.util.List;
 
 public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport implements CommentTbRepositoryCustom {
@@ -53,7 +54,13 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
         QCommentTb qCommentTb = QCommentTb.comments;
 
-        query.delete(qCommentTb).where(qCommentTb.id.eq(community_id)).execute();
+//        query.select(qCommentTb).where(qCommentTb.community_id.eq(community_id)).fetchAll();
+
+
+        query
+                .delete(qCommentTb)
+                .where(qCommentTb.community_id.eq(community_id))
+                .execute();
     }
 
     @Override
@@ -62,8 +69,16 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
         QCommentTb qCommentTb = QCommentTb.comments;
 
-        query.delete(qCommentTb).where(qCommentTb.id.eq(comment_id)).execute();
+        query
+                .delete(qCommentTb)
+                .where(qCommentTb.id.eq(comment_id))
+                .execute();
     }
 
+    public List<CommentTb> getCommentByCommunityId(int community_id){
+        QCommentTb qCommentTb = QCommentTb.comments;
+
+        return query.selectFrom(qCommentTb).where(qCommentTb.community_id.eq(community_id)).fetch();
+    }
 
 }

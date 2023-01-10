@@ -8,24 +8,26 @@ import com.example.spring.spring.repository.CommentRepository;
 import com.example.spring.spring.repository.CommunityRepository;
 import com.example.spring.spring.repository.UserRepository;
 import com.example.spring.spring.repository.UserTbRepositoryCustom;
+import com.example.spring.spring.utils.JwtTokenProvider;
 import com.example.spring.spring.utils.ScriptUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-@Controller
+@RestController
 public class CommunityContoller {
 
     @Autowired
@@ -36,75 +38,70 @@ public class CommunityContoller {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
+
     @RequestMapping(value = "/community")
-    public String community_view(HttpServletRequest request, HttpSession session, Model model){
+    public HashMap community(@RequestBody HashMap<String, Object> data) throws JSONException {
 
-        if(session.getAttribute("user") == null){
-            return "redirect:/";
+        HashMap<String, Object> result = new HashMap<>();
+        String jwt = data.get("jwt").toString();
+
+        if(!jwtTokenProvider.validateToken(jwt)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
         }
-        List<CommunityTb> communityTb;
 
-        String search = request.getParameter("search");
-        if(search == null){
-            
-            try{
-                communityTb  =  communityRepository.getCommunity();
-            }catch(Exception e){
-                System.out.println("비었음");
-                return "/community/community";
+        try{
+            List<CommunityTb> communityTbList  =  communityRepository.getCommunity();
+            JSONArray communityArray = new JSONArray();
+            JSONObject temp = new JSONObject();
+            for(CommunityTb communityTb : communityTbList){
+                if (!ObjectUtils.isEmpty(communityTb)) {
+                    temp.put("content", communityTb.getContent());
+                    temp.put("title", communityTb.getTitle());
+                    temp.put("date", communityTb.getDate());
+                    temp.put("hits", communityTb.getHits());
+                    temp.put("writer", communityTb.getUser().getName());
+                    communityArray.put(temp);
+                }
             }
 
-//            System.out.println("try : " + communityTb.get(0).getUser().getName());
-//            System.out.println("try : " + communityTb.get(1).getUser().getName());
-//            System.out.println("try : " + communityTb.get(2).getUser().getName());
-
-        }else{
-            communityTb = communityRepository.getCommunityBySearch(search);
+            System.out.println(communityArray);
+            result.put("list",communityArray.toString());
+            result.put("resultCode", "true");
+            return result;
+        }catch (Exception e){
+            log.info("/community error");
+            result.put("resultCode", "false");
+            return result;
         }
-
-        model.addAttribute("community_list", communityTb);
-        return "/community/community";
     }
 
 
-//    @RequestMapping(value = "/community/save")
-//    public String community_save(HttpServletRequest request, HttpSession session){
-//
-//        if(session.getAttribute("user") == null){
-//            return "redirect:/";
-//        }
-//        String title = request.getParameter("title");
-//        String content = request.getParameter("content");
-//        String account = (String) session.getAttribute("user");
-//
-//        LocalDate now = LocalDate.now();
-//        CommunityTb communityTb = new CommunityTb();
-//        communityTb.setTitle(title);
-//        communityTb.setContent(content);
-//        communityTb.setWriterPk(1);
-//        communityTb.setDate(now);
-//        communityRepository.save(communityTb);
-//
-//        return "redirect:/community";
-//    }
-
     @RequestMapping(value = "/community/write")
-    public String community_write(HttpSession session, HttpServletRequest request){
+    public HashMap community_save(@RequestBody HashMap<String, Object> data){
 
+        HashMap<String, Object> result = new HashMap<>();
+        String jwt = data.get("jwt").toString();
+        String title = data.get("title").toString();
+        String content = data.get("content").toString();
 
-        if(session.getAttribute("user") == null){
-            return "redirect:/";
+        if(!jwtTokenProvider.validateToken(jwt)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
         }
 
-        if(request.getMethod().equals("GET")){
-            return "community/community_write";
-        }else if(request.getMethod().equals("POST")){
+        log.info("jwt : {} ", jwt);
+        log.info("title {} ", title);
+        log.info("content {} ", content);
 
-            String title = request.getParameter("title");
-            String content = request.getParameter("content");
-            String account = (String) session.getAttribute("user");
-
-            UserTb user = userRepository.getUserTbByAccount(account);
+        try{
+            UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
             LocalDate now = LocalDate.now();
             CommunityTb communityTb = new CommunityTb();
             communityTb.setTitle(title);
@@ -113,62 +110,103 @@ public class CommunityContoller {
             communityTb.setDate(now);
             communityRepository.save(communityTb);
 
-            return "redirect:/community";
-
-        }else{
-            return "redirect:/community";
+            result.put("resultCode", "true");
+            return result;
+        }catch (Exception e){
+            log.info("/community/write error");
+            result.put("resultCode", "false");
+            return result;
         }
 
+
+
     }
-
     @RequestMapping(value = "/community/detail/{community_id}")
-    public String community_detail(@PathVariable int community_id, Model model, HttpSession session){
+    public HashMap community_detail(@PathVariable int community_id, @RequestBody HashMap<String, Object> data){
 
-        System.out.println(community_id);
-        String user = (String)session.getAttribute("user");
-        System.out.println(user);
+        String jwt = data.get("jwt").toString();
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(jwt)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         try{
-            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
-            List<CommentTb> commentTb = commentRepository.getCommentList(community_id);
 
-            communityRepository.Increase_like(communityTb);
+            JSONArray communityArray = new JSONArray();
+            JSONObject temp1 = new JSONObject();
+            JSONArray commentArray = new JSONArray();
+            JSONObject temp2 = new JSONObject();
 
-            model.addAttribute("community", communityTb);
-            model.addAttribute("comments",commentTb);
-            model.addAttribute("user", user);
+            CommunityTb community = communityRepository.getCommunityById(community_id);
+            List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
 
+            temp1.put("content", community.getContent());
+            temp1.put("title", community.getTitle());
+            temp1.put("date", community.getDate());
+            temp1.put("hits", community.getHits());
+            temp1.put("writer", community.getUser().getName());
+            communityArray.put(temp1);
+
+            for(CommentTb comment : commentTbList){
+                temp2.put("comment",comment.getComment());
+                temp2.put("date", comment.getDate());
+                commentArray.put(temp2);
+            }
+
+            communityRepository.Increase_like(community);
+            result.put("community", communityArray.toString());
+            result.put("comment", commentArray.toString());
+            result.put("resultCode", "true");
+            return result;
         }catch(Exception e){
             System.out.println("db error");
             System.out.println(e);
         }
-
-
-
-        return "/community/community_detail";
+        return result;
     }
 
 
 
     @RequestMapping(value= "/community/delete/{community_id}")
-    public String community_delete(@PathVariable int community_id, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws IOException {
+    public HashMap community_delete(@PathVariable int community_id, @RequestBody HashMap<String, Object> data){
 
-        String account = (String) session.getAttribute("user");
 
+        String jwt = data.get("jwt").toString();
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(jwt)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
 
         CommunityTb community = communityRepository.getCommunityById(community_id);
 
         String community_writer = community.getUser().getAccount();
 
-        if(account.equals(community_writer)){
+        if(user.getAccount().equals(community_writer)){
             communityRepository.deleteById(community_id);
-            CommentTb comment = new CommentTb();
-            comment.setCommunity_id(community_id);
-            commentRepository.deleteByCommunityId(community_id);
-            ScriptUtil.alert_location(response, "삭제되었습니다.", "/community");
+
+            //게시글과 관련된 comment 전부 삭제
+            List<CommentTb> commentList = commentRepository.getCommentList(community_id);
+            for(CommentTb commentTb : commentList){
+                commentRepository.deleteById(commentTb.getId());
+            }
+
+            result.put("resultCode", "true");
+            return result;
          } else {
-             ScriptUtil.alert_location(response, "삭제할 수 없습니다.", "/community/detail/"+community_id);
+            log.info("error");
+            log.info("/community/delete/{community_id}");
+            result.put("resultCode", "false");
+            return result;
          }
-        return "redirect:/community";
     }
 
     @RequestMapping(value = "/community/modify/{community_id}")
@@ -221,5 +259,7 @@ public class CommunityContoller {
         return "redirect:/community";
 
     }
+
+
 
 }

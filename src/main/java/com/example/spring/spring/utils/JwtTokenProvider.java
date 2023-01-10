@@ -18,7 +18,7 @@ public class JwtTokenProvider {
     private String secretKey = "myprojectsecret";
 
 
-    private long tokenValidTime = 30 * 60 * 1000L;
+    private long tokenValidTime = 10000 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
 
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
@@ -43,7 +43,7 @@ public class JwtTokenProvider {
 
     //
     // JWT 토큰에서 user의 id 파싱
-    public String getUserId(String token) {
+    public String getUserAccount(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getIssuer();
     }
 //    public String getUserRole(String token) {

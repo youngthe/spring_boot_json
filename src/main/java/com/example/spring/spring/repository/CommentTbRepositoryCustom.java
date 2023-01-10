@@ -15,5 +15,5 @@ public interface CommentTbRepositoryCustom {
     @Transactional
     void deleteComment(int comment_id);
 
-
+    public List<CommentTb> getCommentByCommunityId(int community_id);
 }
