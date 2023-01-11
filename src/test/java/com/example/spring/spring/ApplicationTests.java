@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @SpringBootTest
@@ -31,10 +33,25 @@ class ApplicationTests {
     void contextLoads() {
 
 
-        List<CommentTb> commentList = commentRepository.getCommentList(2);
+//        List<CommentTb> commentList = commentRepository.getCommentList(2);
+//
+//        for(CommentTb commentTb : commentList){
+//            commentRepository.deleteById(commentTb.getId());
+//        }
 
-        for(CommentTb commentTb : commentList){
-            commentRepository.deleteById(commentTb.getId());
+        CommentTb commentOne = commentRepository.getCommentByCommentId(8);
+
+        System.out.println(commentOne.getCommunity_id());
+//        List<CommentTb> commentTbList = commentRepository.getCommentList((int) commentOne.getCommunity_id());
+        List<CommentTb> commentTbList = commentRepository.getCommentList((int) commentOne.getCommunity_id());
+
+        Collections.reverse(commentTbList);
+        for(CommentTb comment : commentTbList){
+            if(comment.getParent().getId() == 8){
+
+                System.out.println(comment.getComment());
+                commentRepository.deleteById(comment.getId());
+            }
         }
 
     }

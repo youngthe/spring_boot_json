@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface CommentTbRepositoryCustom {
 
+    public CommentTb getCommentByCommentId(int commentId);
+
     public List<CommentTb> getCommentList(int Community_id);
     public void deleteByCommunityId(int Community_id);
 
@@ -16,4 +18,6 @@ public interface CommentTbRepositoryCustom {
     void deleteComment(int comment_id);
 
     public List<CommentTb> getCommentByCommunityId(int community_id);
+
+//    public List<CommentTb> getChildCommentByParentComment(int commentId);
 }

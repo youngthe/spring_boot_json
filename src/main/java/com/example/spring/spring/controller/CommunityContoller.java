@@ -43,7 +43,7 @@ public class CommunityContoller {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
-    @RequestMapping(value = "/community")
+    @RequestMapping(value = "/community/")
     public HashMap community(@RequestBody HashMap<String, Object> data) throws JSONException {
 
         HashMap<String, Object> result = new HashMap<>();
@@ -82,7 +82,7 @@ public class CommunityContoller {
     }
 
 
-    @RequestMapping(value = "/community/write")
+    @RequestMapping(value = "/community/write/")
     public HashMap community_save(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
@@ -121,11 +121,11 @@ public class CommunityContoller {
 
 
     }
-    @RequestMapping(value = "/community/detail/{community_id}")
-    public HashMap community_detail(@PathVariable int community_id, @RequestBody HashMap<String, Object> data){
+    @RequestMapping(value = "/community/detail/")
+    public HashMap community_detail(@RequestBody HashMap<String, Object> data){
 
         String jwt = data.get("jwt").toString();
-
+        int community_id = Integer.parseInt(data.get("community_id").toString());
         HashMap<String, Object> result = new HashMap<>();
 
         if(!jwtTokenProvider.validateToken(jwt)){
@@ -165,17 +165,20 @@ public class CommunityContoller {
         }catch(Exception e){
             System.out.println("db error");
             System.out.println(e);
+            result.put("resultCode", "false");
+            return result;
         }
-        return result;
     }
 
 
 
-    @RequestMapping(value= "/community/delete/{community_id}")
-    public HashMap community_delete(@PathVariable int community_id, @RequestBody HashMap<String, Object> data){
+    @RequestMapping(value= "/community/delete/")
+    public HashMap community_delete(@RequestBody HashMap<String, Object> data){
 
 
         String jwt = data.get("jwt").toString();
+        int community_id = Integer.parseInt(data.get("community_id").toString());
+
         HashMap<String, Object> result = new HashMap<>();
 
         if(!jwtTokenProvider.validateToken(jwt)){
@@ -194,9 +197,15 @@ public class CommunityContoller {
             communityRepository.deleteById(community_id);
 
             //게시글과 관련된 comment 전부 삭제
-            List<CommentTb> commentList = commentRepository.getCommentList(community_id);
-            for(CommentTb commentTb : commentList){
-                commentRepository.deleteById(commentTb.getId());
+            CommentTb commentOne = commentRepository.getCommentByCommentId(community.getId());
+            List<CommentTb> commentTbList = commentRepository.getCommentList((int) commentOne.getCommunity_id());
+
+            Collections.reverse(commentTbList);
+            for(CommentTb comment : commentTbList){
+                if(comment.getParent().getId() == commentOne.getId()){
+                    System.out.println(comment.getComment());
+                    commentRepository.deleteById(comment.getId());
+                }
             }
 
             result.put("resultCode", "true");

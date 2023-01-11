@@ -46,7 +46,7 @@ public class HomeController {
 
     }
 
-    @RequestMapping(value = "/loginCheck")
+    @RequestMapping(value = "/logincheck/")
     public HashMap loginCheck(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
@@ -72,7 +72,7 @@ public class HomeController {
         return result;
     }
 
-    @RequestMapping(value = "/register")
+    @RequestMapping(value = "/register/")
     public HashMap Register(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
@@ -105,7 +105,7 @@ public class HomeController {
         }
     }
 
-    @RequestMapping(value = "/logout")
+    @RequestMapping(value = "/logout/")
     public String logout(HttpSession session){
 
         session.invalidate();

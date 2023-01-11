@@ -35,6 +35,15 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
     }
 
+    public CommentTb getCommentByCommentId(int commentId){
+        QCommentTb qCommentTb = QCommentTb.comments;
+
+        return query
+                .selectFrom(qCommentTb)
+                .where(qCommentTb.id.eq(commentId))
+                .fetchOne();
+
+    }
     @Override
     public int getCommunityIdByCommentId(int CommentId){
 
@@ -80,5 +89,14 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
         return query.selectFrom(qCommentTb).where(qCommentTb.community_id.eq(community_id)).fetch();
     }
+
+//    public List<CommentTb> getChildCommentByParentComment(int commentId){
+//        QCommentTb qCommentTb = QCommentTb.comments;
+//
+//        return query
+//                .selectFrom(qCommentTb)
+////                .where(qCommentTb.)
+//                .fetch();
+//    }
 
 }
