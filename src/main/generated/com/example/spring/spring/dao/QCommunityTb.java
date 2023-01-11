@@ -22,8 +22,6 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public static final QCommunityTb communityTb = new QCommunityTb("communityTb");
 
-    public final QCommentTb comment;
-
     public final StringPath content = createString("content");
 
     public final DatePath<java.time.LocalDate> date = createDate("date", java.time.LocalDate.class);
@@ -56,7 +54,6 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public QCommunityTb(Class<? extends CommunityTb> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.comment = inits.isInitialized("comment") ? new QCommentTb(forProperty("comment")) : null;
         this.user = inits.isInitialized("user") ? new QUserTb(forProperty("user")) : null;
     }
 

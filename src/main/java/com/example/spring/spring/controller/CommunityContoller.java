@@ -4,12 +4,8 @@ import com.example.spring.spring.dao.CommentTb;
 import com.example.spring.spring.dao.CommunityTb;
 import com.example.spring.spring.dao.HeartTb;
 import com.example.spring.spring.dao.UserTb;
-import com.example.spring.spring.repository.CommentRepository;
-import com.example.spring.spring.repository.CommunityRepository;
-import com.example.spring.spring.repository.UserRepository;
-import com.example.spring.spring.repository.UserTbRepositoryCustom;
+import com.example.spring.spring.repository.*;
 import com.example.spring.spring.utils.JwtTokenProvider;
-import com.example.spring.spring.utils.ScriptUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +32,13 @@ public class CommunityContoller {
     CommentRepository commentRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    HeartRepository heartRepository;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
@@ -48,6 +47,14 @@ public class CommunityContoller {
 
         HashMap<String, Object> result = new HashMap<>();
         String jwt = data.get("jwt").toString();
+        int nowpage = Integer.parseInt(data.get("nowpage").toString());
+        int countpage = Integer.parseInt(data.get("countpage").toString());
+
+        int start = countpage*nowpage;
+        int end = countpage*(nowpage+1) - 1;
+
+        log.info("start : {}", start);
+        log.info("end : {}", end);
 
         if(!jwtTokenProvider.validateToken(jwt)){
             result.put("message", "Token validate");
@@ -56,25 +63,28 @@ public class CommunityContoller {
         }
 
         try{
-            List<CommunityTb> communityTbList  =  communityRepository.getCommunity();
             JSONArray communityArray = new JSONArray();
-            JSONObject temp = new JSONObject();
-            for(CommunityTb communityTb : communityTbList){
-                if (!ObjectUtils.isEmpty(communityTb)) {
-                    temp.put("content", communityTb.getContent());
-                    temp.put("title", communityTb.getTitle());
-                    temp.put("date", communityTb.getDate());
-                    temp.put("hits", communityTb.getHits());
-                    temp.put("writer", communityTb.getUser().getName());
-                    communityArray.put(temp);
-                }
-            }
+            List<CommunityTb> communityTbList  =  communityRepository.getCommunity();
+            int communityList_maxsize = communityTbList.size();
+            log.info("maxSize : {} ", communityList_maxsize);
+            if(end>=communityList_maxsize) end = communityList_maxsize-1;
 
+            for(int i=start;i<=end;i++){
+                    JSONObject temp = new JSONObject();
+                    temp.put("title", communityTbList.get(i).getTitle());
+                    temp.put("content", communityTbList.get(i).getContent());
+                    temp.put("date", communityTbList.get(i).getDate());
+                    temp.put("hits", communityTbList.get(i).getHits());
+                    temp.put("writer", communityTbList.get(i).getUser().getName());
+                    System.out.println(temp);
+                    communityArray.put(temp);
+            }
             System.out.println(communityArray);
             result.put("list",communityArray.toString());
             result.put("resultCode", "true");
             return result;
         }catch (Exception e){
+            log.info("{}", e);
             log.info("/community error");
             result.put("resultCode", "false");
             return result;
@@ -230,7 +240,6 @@ public class CommunityContoller {
                 model.addAttribute("community", communityTb);
 
             }else{
-                ScriptUtil.alert_back(response, "수정할 수 있는 권한이 없습니다.");
             }
             return "community/community_modify";
         }else if(request.getMethod().equals("POST")){
@@ -247,28 +256,81 @@ public class CommunityContoller {
                 communityTb.setContent(content);
                 communityRepository.updateCommunity(communityTb);
             }else{
-                ScriptUtil.alert_back(response, "수정할 수 있는 권한이 없습니다.");
             }
 
             return "redirect:/community";
         }else{
-            ScriptUtil.alert_back(response, "올바른 요청이 아닙니다");
             return "redirect:/community";
         }
 
     }
 
-    @RequestMapping(value="/community/heart/{community_id}")
-    public String heart_Increase(@PathVariable int community_id, HttpSession session){
+    @RequestMapping(value="/community/heart/push/")
+    public HashMap heart_push(@RequestBody HashMap<String, Object> data){
 
-        String user = (String) session.getAttribute("user");
-        HeartTb heartTb = new HeartTb();
-//        heartTb.getCommunity_id()
+        String jwt = data.get("jwt").toString();
+        String community_id = data.get("community_id").toString();
+        HashMap<String, Object> result = new HashMap<>();
 
-        return "redirect:/community";
+        if(!jwtTokenProvider.validateToken(jwt)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
+        log.info("community_id : {}", community_id);
+
+        try{
+            HeartTb heartTb = new HeartTb();
+            heartTb.setCommunity_id(community_id);
+            heartTb.setWriter_id(user.getId());
+
+            if(heartRepository.HeartCheck(heartTb)){
+                heartRepository.save(heartTb);
+                result.put("resultCode", "true");
+            }else{
+                result.put("message", "already");
+                result.put("resultCode", "false");
+            }
+            return result;
+
+
+        }catch (Exception e){
+            result.put("resultCode", "false");
+            return result;
+        }
 
     }
+    @RequestMapping(value="/community/heart/unpush/")
+    public HashMap heart_unpush(@RequestBody HashMap<String, Object> data){
 
+        String jwt = data.get("jwt").toString();
+        String community_id = data.get("community_id").toString();
+        HashMap<String, Object> result = new HashMap<>();
 
+        if(!jwtTokenProvider.validateToken(jwt)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
+        log.info("community_id : {}", community_id);
+
+        try{
+            HeartTb heartTb = new HeartTb();
+            heartTb.setCommunity_id(community_id);
+            heartTb.setWriter_id(user.getId());
+            heartRepository.deleteByCommunityIdAndWriterId(heartTb);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+            result.put("resultCode", "false");
+            return result;
+        }
+
+    }
 
 }

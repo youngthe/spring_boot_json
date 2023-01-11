@@ -19,7 +19,7 @@ public class UserTb {
     @Column(length = 20, nullable = false)
     private String account;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 200, nullable = false)
     private String pw;
 
     @Column(length = 20)

@@ -63,13 +63,17 @@ public class HomeController {
                 result.put("resultCode", "true");
                 result.put("jwt", jwtTokenProvider.createToken(user));
                 return result;
+            }else{
+                result.put("message","not exist");
+                result.put("resultCode","false");
+                return result;
             }
 
         }catch(Exception e){
+            result.put("message","not exist");
             result.put("resultCode", "false");
             return result;
         }
-        return result;
     }
 
     @RequestMapping(value = "/register/")
