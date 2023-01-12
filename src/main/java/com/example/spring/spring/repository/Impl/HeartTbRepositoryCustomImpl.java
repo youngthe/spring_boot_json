@@ -37,6 +37,17 @@ public class HeartTbRepositoryCustomImpl extends QuerydslRepositorySupport imple
         }
     }
 
+    public HeartTb getHeart(HeartTb heartTb){
+        QHeartTb qhearttb = QHeartTb.heart;
+
+        return query
+                .selectFrom(qhearttb)
+                .where(qhearttb.writer_id.eq(heartTb.getWriter_id()))
+                .where(qhearttb.community_id.eq(heartTb.getCommunity_id()))
+                .fetchOne();
+
+    }
+
     public boolean HeartCheck(HeartTb heartTb){
         QHeartTb qhearttb = QHeartTb.heart;
 

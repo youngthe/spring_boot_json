@@ -48,7 +48,7 @@ public class HomeController {
 
     }
 
-    @RequestMapping(value = "/logincheck/")
+    @RequestMapping(value = "/logincheck/", method = RequestMethod.POST)
     public HashMap loginCheck(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
@@ -78,7 +78,7 @@ public class HomeController {
         }
     }
 
-    @RequestMapping(value = "/register/")
+    @RequestMapping(value = "/register/", method = RequestMethod.POST)
     public HashMap Register(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();

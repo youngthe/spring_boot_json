@@ -6,5 +6,8 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 public interface HeartTbRepositoryCustom {
     public boolean deleteByCommunityIdAndWriterId(HeartTb heartTb);
 
+    public HeartTb getHeart(HeartTb heartTb);
+
     public boolean HeartCheck(HeartTb heartTb);
+
 }
