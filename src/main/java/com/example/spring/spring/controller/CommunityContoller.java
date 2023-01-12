@@ -12,18 +12,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.File;
 import java.io.IOException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
-@RestController
+//@RestController
+@Controller
 public class CommunityContoller {
 
     @Autowired
@@ -40,13 +48,13 @@ public class CommunityContoller {
     @Autowired
     HeartRepository heartRepository;
 
+
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
-    @RequestMapping(value = "/community/")
-    public HashMap community(@RequestBody HashMap<String, Object> data) throws JSONException {
+    @RequestMapping(value = "/community/", method = RequestMethod.GET)
+    public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) throws JSONException {
 
         HashMap<String, Object> result = new HashMap<>();
-        String jwt = data.get("jwt").toString();
         int nowpage = Integer.parseInt(data.get("nowpage").toString());
         int countpage = Integer.parseInt(data.get("countpage").toString());
 
@@ -56,7 +64,7 @@ public class CommunityContoller {
         log.info("start : {}", start);
         log.info("end : {}", end);
 
-        if(!jwtTokenProvider.validateToken(jwt)){
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
@@ -92,33 +100,50 @@ public class CommunityContoller {
     }
 
 
-    @RequestMapping(value = "/community/write/")
-    public HashMap community_save(@RequestBody HashMap<String, Object> data){
+    @RequestMapping(value = "/community/write/", method = RequestMethod.POST)
+    public HashMap community_save(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader,
+                                  @RequestParam("upload") MultipartFile file) throws IOException {
 
         HashMap<String, Object> result = new HashMap<>();
-        String jwt = data.get("jwt").toString();
         String title = data.get("title").toString();
         String content = data.get("content").toString();
-
-        if(!jwtTokenProvider.validateToken(jwt)){
+        String filename = null;
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        log.info("jwt : {} ", jwt);
+        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        String[] filetotal = file.getOriginalFilename().split("\\.");
+        System.out.println(file.getOriginalFilename());
+        System.out.println(filetotal[1]);
+
+        if(!file.isEmpty()){
+            filename = timestamp + "." + filetotal[filetotal.length-1];
+            String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + filename;
+            log.info("파일 저장 {}", fullPath);
+            file.transferTo(new File(fullPath));
+
+        }
+
+
+
+        log.info("jwt : {} ", tokenHeader);
         log.info("title {} ", title);
         log.info("content {} ", content);
 
         try{
-            UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
+            UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(tokenHeader));
             LocalDate now = LocalDate.now();
             CommunityTb communityTb = new CommunityTb();
+            communityTb.setFile_name(filename);
             communityTb.setTitle(title);
             communityTb.setContent(content);
             communityTb.setUser(user);
             communityTb.setDate(now);
             communityRepository.save(communityTb);
+
 
             result.put("resultCode", "true");
             return result;
@@ -128,17 +153,87 @@ public class CommunityContoller {
             return result;
         }
 
+    }
 
+    //jwt랑 user 정보만 test로 고정
+    @RequestMapping(value = "/community/testwrite/", method = RequestMethod.POST)
+    public HashMap testCommunityWrite(HttpServletRequest request, @RequestParam("upload") MultipartFile file) throws IOException {
+        log.info("/testWrite");
+        HashMap<String, Object> result = new HashMap<>();
+        String title = request.getParameter("title");
+        String content = request.getParameter("content");
+        String filename = null;
+//        if(!jwtTokenProvider.validateToken(tokenHeader)){
+//            result.put("message", "Token validate");
+//            result.put("resultCode", "false");
+//            return result;
+//        }
+
+        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        String[] filetotal = file.getOriginalFilename().split("\\.");
+        System.out.println(file.getOriginalFilename());
+        System.out.println(filetotal[1]);
+
+        if(!file.isEmpty()){
+            filename = timestamp + "." + filetotal[filetotal.length-1];
+            String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + filename;
+            log.info("파일 저장 {}", fullPath);
+            file.transferTo(new File(fullPath));
+
+        }
+
+        log.info("title {} ", title);
+        log.info("content {} ", content);
+
+        try{
+            UserTb user = userRepository.getUserTbByAccount("test");
+            LocalDate now = LocalDate.now();
+            CommunityTb communityTb = new CommunityTb();
+            communityTb.setFile_name(filename);
+            communityTb.setTitle(title);
+            communityTb.setContent(content);
+            communityTb.setUser(user);
+            communityTb.setDate(now);
+            communityRepository.save(communityTb);
+
+
+            result.put("resultCode", "true");
+            return result;
+        }catch (Exception e){
+            log.info("/community/write error");
+            result.put("resultCode", "false");
+            return result;
+        }
 
     }
-    @RequestMapping(value = "/community/detail/")
-    public HashMap community_detail(@RequestBody HashMap<String, Object> data){
 
-        String jwt = data.get("jwt").toString();
+    @RequestMapping(value = "/community/write/file", method = RequestMethod.POST)
+    public String test (@RequestParam("upload") MultipartFile file) throws IOException {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        String[] filename = file.getOriginalFilename().split("\\.");
+        System.out.println(file.getOriginalFilename());
+        System.out.println(filename[1]);
+
+        if(!file.isEmpty()){
+            String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + timestamp + "." + filename[filename.length-1];
+            log.info("파일 저장 {}", fullPath);
+            file.transferTo(new File(fullPath));
+        }
+
+        return "success";
+    }
+
+
+    @RequestMapping(value = "/community/detail/")
+    public HashMap community_detail(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+
         int community_id = Integer.parseInt(data.get("community_id").toString());
         HashMap<String, Object> result = new HashMap<>();
 
-        if(!jwtTokenProvider.validateToken(jwt)){
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
@@ -149,7 +244,6 @@ public class CommunityContoller {
             JSONArray communityArray = new JSONArray();
             JSONObject temp1 = new JSONObject();
             JSONArray commentArray = new JSONArray();
-            JSONObject temp2 = new JSONObject();
 
             CommunityTb community = communityRepository.getCommunityById(community_id);
             List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
@@ -162,8 +256,11 @@ public class CommunityContoller {
             communityArray.put(temp1);
 
             for(CommentTb comment : commentTbList){
+                JSONObject temp2 = new JSONObject();
+                temp2.put("id", comment.getId());
                 temp2.put("comment",comment.getComment());
                 temp2.put("date", comment.getDate());
+                temp2.put("parent", comment.getParent().getId());
                 commentArray.put(temp2);
             }
 
@@ -175,6 +272,7 @@ public class CommunityContoller {
         }catch(Exception e){
             System.out.println("db error");
             System.out.println(e);
+            result.put("message", "page null");
             result.put("resultCode", "false");
             return result;
         }
@@ -184,7 +282,6 @@ public class CommunityContoller {
 
     @RequestMapping(value= "/community/delete/")
     public HashMap community_delete(@RequestBody HashMap<String, Object> data){
-
 
         String jwt = data.get("jwt").toString();
         int community_id = Integer.parseInt(data.get("community_id").toString());
@@ -331,6 +428,13 @@ public class CommunityContoller {
             return result;
         }
 
+    }
+
+
+    @RequestMapping(value = "/site")
+    public String site (){
+
+        return "/community/community_write";
     }
 
 }

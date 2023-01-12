@@ -23,7 +23,7 @@ public class QHeartTb extends EntityPathBase<HeartTb> {
 
     public final NumberPath<Integer> id = createNumber("id", Integer.class);
 
-    public final StringPath writer_id = createString("writer_id");
+    public final NumberPath<Integer> writer_id = createNumber("writer_id", Integer.class);
 
     public QHeartTb(String variable) {
         super(HeartTb.class, forVariable(variable));

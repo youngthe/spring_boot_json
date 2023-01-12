@@ -15,10 +15,10 @@ import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
-    private String secretKey = "myprojectsecret";
+    private String secretKey = "myproject";
 
 
-    private long tokenValidTime = 10000 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
+    private long tokenValidTime = 30 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
 
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
