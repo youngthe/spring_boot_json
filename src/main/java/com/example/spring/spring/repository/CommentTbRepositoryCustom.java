@@ -19,5 +19,6 @@ public interface CommentTbRepositoryCustom {
 
     public List<CommentTb> getCommentByCommunityId(int community_id);
 
-//    public List<CommentTb> getChildCommentByParentComment(int commentId);
+    public void deleteByParent(int parent_id);
+
 }

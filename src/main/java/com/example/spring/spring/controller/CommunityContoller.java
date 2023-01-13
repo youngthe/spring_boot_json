@@ -163,21 +163,15 @@ public class CommunityContoller {
         String title = request.getParameter("title");
         String content = request.getParameter("content");
         String filename = null;
-//        if(!jwtTokenProvider.validateToken(tokenHeader)){
-//            result.put("message", "Token validate");
-//            result.put("resultCode", "false");
-//            return result;
-//        }
-
-        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-        String[] filetotal = file.getOriginalFilename().split("\\.");
-        System.out.println(file.getOriginalFilename());
-        System.out.println(filetotal[1]);
 
         if(!file.isEmpty()){
+            long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+            String[] filetotal = file.getOriginalFilename().split("\\.");
+            System.out.println(file.getOriginalFilename());
+            System.out.println(filetotal[1]);
             filename = timestamp + "." + filetotal[filetotal.length-1];
             String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + filename;
-            log.info("파일 저장 {}", fullPath);
+            log.info("파일 저장 : {}", fullPath);
             file.transferTo(new File(fullPath));
 
         }
@@ -207,27 +201,8 @@ public class CommunityContoller {
 
     }
 
-    @RequestMapping(value = "/community/write/file", method = RequestMethod.POST)
-    public String test (@RequestParam("upload") MultipartFile file) throws IOException {
 
-        HashMap<String, Object> result = new HashMap<>();
-
-        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-        String[] filename = file.getOriginalFilename().split("\\.");
-        System.out.println(file.getOriginalFilename());
-        System.out.println(filename[1]);
-
-        if(!file.isEmpty()){
-            String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + timestamp + "." + filename[filename.length-1];
-            log.info("파일 저장 {}", fullPath);
-            file.transferTo(new File(fullPath));
-        }
-
-        return "success";
-    }
-
-
-    @RequestMapping(value = "/community/detail/")
+    @RequestMapping(value = "/community/detail/", method = RequestMethod.GET)
     public HashMap community_detail(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
 
         int community_id = Integer.parseInt(data.get("community_id").toString());
@@ -260,7 +235,7 @@ public class CommunityContoller {
                 temp2.put("id", comment.getId());
                 temp2.put("comment",comment.getComment());
                 temp2.put("date", comment.getDate());
-                temp2.put("parent", comment.getParent().getId());
+                temp2.put("parent", comment.getId());
                 commentArray.put(temp2);
             }
 
@@ -280,21 +255,20 @@ public class CommunityContoller {
 
 
 
-    @RequestMapping(value= "/community/delete/")
-    public HashMap community_delete(@RequestBody HashMap<String, Object> data){
+    @RequestMapping(value= "/community/delete/", method = RequestMethod.GET)
+    public HashMap community_delete(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
 
-        String jwt = data.get("jwt").toString();
         int community_id = Integer.parseInt(data.get("community_id").toString());
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if(!jwtTokenProvider.validateToken(jwt)){
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
+        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(tokenHeader));
 
         CommunityTb community = communityRepository.getCommunityById(community_id);
 
@@ -304,16 +278,23 @@ public class CommunityContoller {
             communityRepository.deleteById(community_id);
 
             //게시글과 관련된 comment 전부 삭제
-            CommentTb commentOne = commentRepository.getCommentByCommentId(community.getId());
-            List<CommentTb> commentTbList = commentRepository.getCommentList((int) commentOne.getCommunity_id());
+//            CommentTb commentOne = commentRepository.getCommentByCommentId(community.getId());
+//            List<CommentTb> commentTbList = commentRepository.getCommentList((int) commentOne.getCommunity_id());
+//
+//            Collections.reverse(commentTbList);
+//            for(CommentTb comment : commentTbList){
+//                if(comment.getId() == commentOne.getId()){
+//                    System.out.println(comment.getComment());
+//                    commentRepository.deleteById(comment.getId());
+//                }
+//            }
 
-            Collections.reverse(commentTbList);
-            for(CommentTb comment : commentTbList){
-                if(comment.getParent().getId() == commentOne.getId()){
-                    System.out.println(comment.getComment());
-                    commentRepository.deleteById(comment.getId());
-                }
-            }
+            commentRepository.deleteByCommunityId(community_id);
+//            List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
+//
+//            for(CommentTb comment : commentTbList){
+//                    commentRepository.deleteById(comment.getId());
+//            }
 
             result.put("resultCode", "true");
             return result;
@@ -325,111 +306,74 @@ public class CommunityContoller {
          }
     }
 
-    @RequestMapping(value = "/community/modify/{community_id}")
-    public String communit_modify(@PathVariable int community_id, HttpServletResponse response,HttpServletRequest request, HttpSession session, Model model) throws IOException {
+    @RequestMapping(value = "/community/modify/", method = RequestMethod.POST)
+    public HashMap community_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) throws IOException {
 
+        HashMap<String, Object> result =new HashMap<>();
+        int community_id = Integer.parseInt(data.get("community_id").toString());
+        String title = data.get("title").toString();
+        String content = data.get("content").toString();
+        CommunityTb communityTb = communityRepository.getCommunityById(community_id);
+        String account = jwtTokenProvider.getUserAccount(tokenHeader);
 
-        if(request.getMethod().equals("GET")){
-            String user = (String) session.getAttribute("user");
-            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
-            if(user.equals(communityTb.getUser().getAccount())){
+        log.info("title : {}", title);
+        log.info("content : {}", content);
 
-                model.addAttribute("community", communityTb);
-
-            }else{
-            }
-            return "community/community_modify";
-        }else if(request.getMethod().equals("POST")){
-            String user = (String) session.getAttribute("user");
-            System.out.println("user : "+ user);
-            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
-
-            if(user.equals(communityTb.getUser().getAccount())){
-                String title = request.getParameter("title");
-                String content = request.getParameter("content");
-                System.out.println(title);
-                System.out.println(content);
-                communityTb.setTitle(title);
-                communityTb.setContent(content);
-                communityRepository.updateCommunity(communityTb);
-            }else{
-            }
-
-            return "redirect:/community";
-        }else{
-            return "redirect:/community";
-        }
-
-    }
-
-    @RequestMapping(value="/community/heart/push/")
-    public HashMap heart_push(@RequestBody HashMap<String, Object> data){
-
-        String jwt = data.get("jwt").toString();
-        String community_id = data.get("community_id").toString();
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(!jwtTokenProvider.validateToken(jwt)){
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
-        log.info("community_id : {}", community_id);
+        if(account.equals(communityTb.getUser().getAccount())){
 
-        try{
-            HeartTb heartTb = new HeartTb();
-            heartTb.setCommunity_id(community_id);
-            heartTb.setWriter_id(user.getId());
-
-            if(heartRepository.HeartCheck(heartTb)){
-                heartRepository.save(heartTb);
-                result.put("resultCode", "true");
-            }else{
-                result.put("message", "already");
-                result.put("resultCode", "false");
-            }
-            return result;
-
-
-        }catch (Exception e){
-            result.put("resultCode", "false");
-            return result;
-        }
-
-    }
-    @RequestMapping(value="/community/heart/unpush/")
-    public HashMap heart_unpush(@RequestBody HashMap<String, Object> data){
-
-        String jwt = data.get("jwt").toString();
-        String community_id = data.get("community_id").toString();
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(!jwtTokenProvider.validateToken(jwt)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(jwt));
-        log.info("community_id : {}", community_id);
-
-        try{
-            HeartTb heartTb = new HeartTb();
-            heartTb.setCommunity_id(community_id);
-            heartTb.setWriter_id(user.getId());
-            heartRepository.deleteByCommunityIdAndWriterId(heartTb);
+            log.info("account : {}", account);
+            communityTb.setTitle(title);
+            communityTb.setContent(content);
+            communityRepository.updateCommunity(communityTb);
             result.put("resultCode", "true");
             return result;
-
-        }catch (Exception e){
+        }else{
+            result.put("message", "not Correspond");
             result.put("resultCode", "false");
             return result;
         }
 
     }
 
+    @RequestMapping(value="/community/heart/push/", method = RequestMethod.GET)
+    public HashMap heart_push(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+
+        String community_id = data.get("community_id").toString();
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByAccount(jwtTokenProvider.getUserAccount(tokenHeader));
+        log.info("community_id : {}", community_id);
+
+        HeartTb heartTb = new HeartTb();
+        heartTb.setCommunity_id(community_id);
+        heartTb.setWriter_id(user.getId());
+
+        if(heartRepository.HeartCheck(heartTb)){
+            heartRepository.save(heartTb);
+            result.put("message", "pushed");
+            result.put("resultCode", "true");
+            return result;
+        }else{
+            HeartTb heart = heartRepository.getHeart(heartTb);
+            heartRepository.delete(heart);
+            result.put("message", "unpushed");
+            result.put("resultCode", "true");
+            return result;
+        }
+
+    }
 
     @RequestMapping(value = "/site")
     public String site (){

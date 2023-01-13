@@ -63,12 +63,21 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
         QCommentTb qCommentTb = QCommentTb.comments;
 
-//        query.select(qCommentTb).where(qCommentTb.community_id.eq(community_id)).fetchAll();
-
-
         query
                 .delete(qCommentTb)
                 .where(qCommentTb.community_id.eq(community_id))
+                .execute();
+    }
+
+    @Override
+    @Transactional
+    public void deleteByParent(int parent_id){
+
+        QCommentTb qCommentTb = QCommentTb.comments;
+
+        query
+                .delete(qCommentTb)
+                .where(qCommentTb.parent.eq(parent_id))
                 .execute();
     }
 

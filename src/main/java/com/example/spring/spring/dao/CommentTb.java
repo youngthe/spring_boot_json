@@ -27,9 +27,8 @@ public class CommentTb {
     @Column(name = "date")
     private String date;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private CommentTb parent;
+    @Column(name = "parent")
+    private int parent;
 
 
 
@@ -65,11 +64,11 @@ public class CommentTb {
     }
 
 
-    public CommentTb getParent() {
+    public int getParent() {
         return parent;
     }
 
-    public void setParent(CommentTb parent) {
+    public void setParent(int parent) {
         this.parent = parent;
     }
 
