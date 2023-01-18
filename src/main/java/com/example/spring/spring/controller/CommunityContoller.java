@@ -13,6 +13,7 @@ import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
@@ -30,8 +31,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-//@RestController
-@Controller
+@RestController
+//@Controller
 public class CommunityContoller {
 
     @Autowired
@@ -99,27 +100,28 @@ public class CommunityContoller {
         }
     }
 
-
+    @Nullable
     @RequestMapping(value = "/community/write/", method = RequestMethod.POST)
-    public HashMap community_save(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader,
-                                  @RequestParam("upload") MultipartFile file) throws IOException {
+    public HashMap community_save(@RequestHeader("jwt") String tokenHeader,
+                                  @RequestParam(value = "upload", required = false) MultipartFile file, @RequestParam("title") String title, @RequestParam("content") String content) throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
-        String title = data.get("title").toString();
-        String content = data.get("content").toString();
         String filename = null;
+
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
+//        System.out.println("file is :: " + file);
+//        System.out.println("file type is ::" + (file.getClass().getName()));
 
-        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-        String[] filetotal = file.getOriginalFilename().split("\\.");
-        System.out.println(file.getOriginalFilename());
-        System.out.println(filetotal[1]);
-
-        if(!file.isEmpty()){
+        if(file != null){
+            System.out.println("test");
+            long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+            String[] filetotal = file.getOriginalFilename().split("\\.");
+            System.out.println(file.getOriginalFilename());
+            System.out.println(filetotal[1]);
             filename = timestamp + "." + filetotal[filetotal.length-1];
             String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + filename;
             log.info("파일 저장 {}", fullPath);

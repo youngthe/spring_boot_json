@@ -25,6 +25,11 @@ public class UserTb {
     @Column(length = 20)
     private String name;
 
+    @Column(length = 10)
+    private String role;
+
+
+
     @OneToMany(mappedBy = "user")
     private List<CommunityTb> CommunityTb = new ArrayList<CommunityTb>();
 
@@ -57,5 +62,11 @@ public class UserTb {
         this.pw = pw;
     }
 
+    public String getRole() {
+        return role;
+    }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
 }

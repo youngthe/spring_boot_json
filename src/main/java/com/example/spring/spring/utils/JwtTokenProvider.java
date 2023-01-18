@@ -18,7 +18,7 @@ public class JwtTokenProvider {
     private String secretKey = "myproject";
 
 
-    private long tokenValidTime = 30 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
+    private long tokenValidTime = 60 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
 
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.
@@ -33,7 +33,7 @@ public class JwtTokenProvider {
         Date now = new Date();
 
         return Jwts.builder()
-                .setIssuer(user.getAccount())
+                .setIssuer(user.getId().toString())
 //                .setSubject(user.getRole())
                 .setIssuedAt(now) // 토큰 발행 시간 정보
                 .setExpiration(new Date(now.getTime() + tokenValidTime)) // set Expire Time
@@ -46,11 +46,9 @@ public class JwtTokenProvider {
     public String getUserAccount(String token) {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getIssuer();
     }
-//    public String getUserRole(String token) {
-//        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
-//    }
-    // 토큰의 유효성 + 만료일자 확인
 
+
+    // 토큰의 유효성 + 만료일자 확인
     public boolean validateToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
