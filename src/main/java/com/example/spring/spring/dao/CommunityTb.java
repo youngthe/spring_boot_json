@@ -4,12 +4,12 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "COMMUNITY")
+@Table(name = "community")
 public class CommunityTb {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private int community_id;
 
     @Column(name = "title")
     private String title;
@@ -27,17 +27,16 @@ public class CommunityTb {
     @Column(name = "hits")
     private int hits;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usertb_id")
-    private UserTb user;
+    @Column(name = "user_id")
+    private int user_id;
 
 
-    public UserTb getUser() {
-        return user;
+    public int getUser_id() {
+        return user_id;
     }
 
-    public void setUser(UserTb user) {
-        this.user = user;
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
     }
 
     public String getFile_name() {
@@ -64,12 +63,12 @@ public class CommunityTb {
         this.date = date;
     }
 
-    public int getId() {
-        return id;
+    public int getCommunity_id() {
+        return community_id;
     }
 
-    public void setID(int id) {
-        this.id = id;
+    public void setCommunity_id(int community_id) {
+        this.community_id = community_id;
     }
 
     public String getTitle() {

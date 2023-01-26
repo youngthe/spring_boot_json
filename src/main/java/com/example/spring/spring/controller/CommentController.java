@@ -30,7 +30,7 @@ public class CommentController {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
-    @RequestMapping(value="/community/comment/delete/", method = RequestMethod.GET)
+    @RequestMapping(value="/community/comment/delete", method = RequestMethod.GET)
     public HashMap comment_Delete(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
         HashMap<String, Object> result = new HashMap<>();
 
@@ -41,11 +41,22 @@ public class CommentController {
             result.put("resultCode", "false");
             return result;
         }
-        try{
 
-            commentRepository.deleteById(comment_id);
-            commentRepository.deleteByParent(comment_id);
-            result.put("resultCode", "true");
+        try{
+            CommentTb commentTb = commentRepository.getCommentByCommentId(comment_id);
+
+            ;
+            if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader)){
+
+                commentRepository.deleteById(comment_id);
+                commentRepository.deleteByParent(comment_id);
+                result.put("resultCode", "true");
+
+            }else{
+                result.put("message", "don't have authority");
+                result.put("resultCode", "false");
+            }
+
             return result;
 
         }catch(Exception e){
@@ -59,7 +70,7 @@ public class CommentController {
         }
     }
 
-    @RequestMapping(value = "/community/comments/write/", method = RequestMethod.POST)
+    @RequestMapping(value = "/community/comments/write", method = RequestMethod.POST)
     public HashMap comment_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
 
         String comment = data.get("comment").toString();
@@ -77,6 +88,7 @@ public class CommentController {
         try{
             String now = LocalDate.now().toString();
             CommentTb commentTb = new CommentTb();
+            commentTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
             commentTb.setCommunity_id(community_id);
             commentTb.setComment(comment);
             commentTb.setDate(now);
@@ -93,7 +105,7 @@ public class CommentController {
 
     }
 
-    @RequestMapping(value = "/community/recomment/", method = RequestMethod.POST)
+    @RequestMapping(value = "/community/recomment", method = RequestMethod.POST)
     public HashMap recomment_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
 
         String recomment = data.get("recomment").toString();

@@ -59,6 +59,17 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     }
 
+    public UserTb getUserTbByUserId(int user_id){
+
+        QUserTb qusertb = QUserTb.user;
+
+        return query
+                .selectFrom(qusertb)
+                .where(qusertb.user_id.eq(user_id))
+                .fetchOne();
+
+    }
+
     public String getNameByAccount(String account){
 
         QUserTb qusertb = QUserTb.user;
@@ -75,7 +86,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
         QUserTb qusertb = QUserTb.user;
 
         return query.selectFrom(qusertb)
-                .where(qusertb.id.eq(id))
+                .where(qusertb.user_id.eq(id))
                 .fetchOne()
                 .getName();
     }

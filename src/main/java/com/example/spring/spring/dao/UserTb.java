@@ -9,12 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "USER")
+@Table(name = "user")
 public class UserTb {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int user_id;
 
     @Column(length = 20, nullable = false)
     private String account;
@@ -28,22 +28,17 @@ public class UserTb {
     @Column(length = 10)
     private String role;
 
-
-
-    @OneToMany(mappedBy = "user")
-    private List<CommunityTb> CommunityTb = new ArrayList<CommunityTb>();
-
     public String getName() {
         return name;
     }
     public void setName(String name) {
         this.name = name;
     }
-    public Integer getId() {
-        return id;
+    public Integer getUser_id() {
+        return user_id;
     }
-    public void setId(Integer pk) {
-        this.id = pk;
+    public void setUser_id(Integer pk) {
+        this.user_id = pk;
     }
 
     public String getAccount() {

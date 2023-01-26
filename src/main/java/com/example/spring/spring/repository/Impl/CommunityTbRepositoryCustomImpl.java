@@ -63,7 +63,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
 
         query.update(qCommunityTb)
-                .where(qCommunityTb.id.eq(communityTb.getId()))
+                .where(qCommunityTb.id.eq(communityTb.getCommunity_id()))
                 .set(qCommunityTb.hits, communityTb.getHits()+1)
                 .execute();
     }
@@ -73,7 +73,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
     public void updateCommunity(CommunityTb communityTb) {
         QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
 
-        query.update(qCommunityTb).where(qCommunityTb.id.eq(communityTb.getId()))
+        query.update(qCommunityTb).where(qCommunityTb.id.eq(communityTb.getCommunity_id()))
                 .set(qCommunityTb.title, communityTb.getTitle())
                 .set(qCommunityTb.content, communityTb.getContent())
                 .execute();

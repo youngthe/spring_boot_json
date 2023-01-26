@@ -21,17 +21,7 @@ public class SpringSecurity extends WebSecurityConfigurerAdapter {
                 .csrf().disable()		//csrf방지
                 .formLogin().disable()	//기본 로그인 페이지 없애기
                 .headers().frameOptions().disable();
-        http.
-                authorizeRequests()
-                .antMatchers("/community").permitAll()    // LoadBalancer Chk
-                .antMatchers("/admin").hasAuthority("ROLE_ADMIN")
-                .anyRequest().authenticated();
-
 
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
 }

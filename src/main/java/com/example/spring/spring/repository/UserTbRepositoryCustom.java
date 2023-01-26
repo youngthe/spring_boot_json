@@ -6,6 +6,8 @@ public interface UserTbRepositoryCustom {
 
     public boolean LoginCheck(UserTb userTb);
 
+    public UserTb getUserTbByUserId(int user_id);
+
     public UserTb getUserTbByAccount(String account);
 
     public String getNameByAccount(String account);

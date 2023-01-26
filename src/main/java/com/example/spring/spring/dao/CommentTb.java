@@ -11,15 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "COMMENTS")
+@Table(name = "comments")
 public class CommentTb {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int comment_id;
 
     @Column(name = "community_id")
-    private long community_id;
+    private int community_id;
 
     @Column(name = "comment")
     private String comment;
@@ -30,13 +30,22 @@ public class CommentTb {
     @Column(name = "parent")
     private int parent;
 
+    @Column(name = "user_id")
+    private int user_id;
 
+    public int getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
+    }
 
     public long getCommunity_id() {
         return community_id;
     }
 
-    public void setCommunity_id(long community_id) {
+    public void setCommunity_id(int community_id) {
         this.community_id = community_id;
     }
 
@@ -55,12 +64,12 @@ public class CommentTb {
     public void setDate(String date) {
         this.date = date;
     }
-    public int getId() {
-        return id;
+    public int getComment_id() {
+        return comment_id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setComment_id(int comment_id) {
+        this.comment_id = comment_id;
     }
 
 

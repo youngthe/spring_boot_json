@@ -48,7 +48,7 @@ public class HomeController {
 
     }
 
-    @RequestMapping(value = "/logincheck/", method = RequestMethod.POST)
+    @RequestMapping(value = "/logincheck", method = RequestMethod.POST)
     public HashMap loginCheck(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
@@ -56,10 +56,10 @@ public class HomeController {
         String pw = data.get("pw").toString();
 
         log.info("account : {}", account);
-        log.info("pw : {}", account);
 
         try{
             UserTb user = userRepository.getUserTbByAccount(account);
+
             String get_pw = user.getPw();
             if(passwordEncoder.matches(pw, get_pw)){
                 result.put("resultCode", "true");
@@ -78,7 +78,7 @@ public class HomeController {
         }
     }
 
-    @RequestMapping(value = "/register/", method = RequestMethod.POST)
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
     public HashMap Register(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
@@ -111,7 +111,7 @@ public class HomeController {
         }
     }
 
-    @RequestMapping(value = "/logout/")
+    @RequestMapping(value = "/logout")
     public String logout(HttpSession session){
 
         session.invalidate();

@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.apache.catalina.User;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -33,7 +32,7 @@ public class JwtTokenProvider {
         Date now = new Date();
 
         return Jwts.builder()
-                .setIssuer(user.getId().toString())
+                .setIssuer(user.getUser_id().toString())
 //                .setSubject(user.getRole())
                 .setIssuedAt(now) // 토큰 발행 시간 정보
                 .setExpiration(new Date(now.getTime() + tokenValidTime)) // set Expire Time
@@ -43,8 +42,8 @@ public class JwtTokenProvider {
 
     //
     // JWT 토큰에서 user의 id 파싱
-    public String getUserAccount(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getIssuer();
+    public int getUserId(String token) {
+        return Integer.parseInt(Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getIssuer());
     }
 
 
