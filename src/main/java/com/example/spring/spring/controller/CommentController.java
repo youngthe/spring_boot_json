@@ -31,7 +31,7 @@ public class CommentController {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     @RequestMapping(value="/community/comment/delete", method = RequestMethod.GET)
-    public HashMap comment_Delete(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap comment_delete(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
         HashMap<String, Object> result = new HashMap<>();
 
         int comment_id = Integer.parseInt(data.get("comment_id").toString());
@@ -71,7 +71,7 @@ public class CommentController {
     }
 
     @RequestMapping(value = "/community/comments/write", method = RequestMethod.POST)
-    public HashMap comment_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap comment_write(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
 
         String comment = data.get("comment").toString();
         int community_id = Integer.parseInt(data.get("community_id").toString());
@@ -105,10 +105,10 @@ public class CommentController {
 
     }
 
-    @RequestMapping(value = "/community/recomment", method = RequestMethod.POST)
-    public HashMap recomment_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    @RequestMapping(value = "/community/recomment/write", method = RequestMethod.POST)
+    public HashMap recomment_write(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
 
-        String recomment = data.get("recomment").toString();
+        String comment = data.get("comment").toString();
         int commentId = Integer.parseInt(data.get("commentId").toString());
 
         HashMap<String, Object> result = new HashMap<>();
@@ -120,15 +120,16 @@ public class CommentController {
 
 
         log.info("jwt : {}", tokenHeader);
-        log.info("comment : {}", recomment);
+        log.info("comment : {}", comment);
 
         String now = LocalDate.now().toString();
 
         try{
             int communityId = commentRepository.getCommunityIdByCommentId(commentId);
             CommentTb commentTb = new CommentTb();
+            commentTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
             commentTb.setCommunity_id(communityId);
-            commentTb.setComment(recomment);
+            commentTb.setComment(comment);
             commentTb.setDate(now);
             commentTb.setParent(commentId);
             commentRepository.save(commentTb);
@@ -140,5 +141,39 @@ public class CommentController {
             return result;
         }
 
+    }
+
+
+    @RequestMapping(value = "/community/comment/modify", method = RequestMethod.POST)
+    public HashMap comment_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int comment_id = Integer.parseInt(data.get("comment_id").toString());
+        String comment = data.get("comment").toString();
+
+        CommentTb commentTb = commentRepository.getCommentByCommentId(comment_id);
+
+        if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader)){
+
+            commentTb.setComment(comment);
+            commentRepository.save(commentTb);
+            result.put("resultCode", "true");
+
+        }else{
+            result.put("message", "authority");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
+
+        return result;
     }
 }
