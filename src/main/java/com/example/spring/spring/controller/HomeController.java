@@ -1,7 +1,9 @@
 package com.example.spring.spring.controller;
 
 import com.example.spring.spring.dao.UserTb;
+import com.example.spring.spring.dao.WalletTb;
 import com.example.spring.spring.repository.UserRepository;
+import com.example.spring.spring.repository.WalletRepository;
 import com.example.spring.spring.utils.JwtTokenProvider;
 import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
@@ -18,6 +20,8 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -34,11 +38,15 @@ public class HomeController {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private WalletRepository walletRepository;
+
+
 
 
 
     @RequestMapping(value = "/")
-    public HashMap login(HttpSession session){
+    public HashMap login(){
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -110,15 +118,37 @@ public class HomeController {
             return result;
         }
     }
+    @RequestMapping(value = "/wallet/add", method = RequestMethod.POST)
+    public HashMap wallet_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
 
-    @RequestMapping(value = "/logout")
-    public String logout(HttpSession session){
+        HashMap<String, Object> result = new HashMap<>();
 
-        session.invalidate();
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
 
-        return "login";
+        String address = data.get("address").toString();
+
+        try{
+
+            LocalDate now = LocalDate.now();
+            WalletTb walletTb = new WalletTb();
+            walletTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            walletTb.setAddress(address);
+            walletTb.setCreated_date(now);
+            walletTb.setLast_modified_date(now);
+            walletTb.setCoin(0);
+            walletRepository.save(walletTb);
+            result.put("resultCode", "true");
+
+        }catch (Exception e){
+            result.put("resultCode", "false");
+        }
+
+        return result;
     }
-
 
 
 }

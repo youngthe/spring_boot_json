@@ -19,7 +19,6 @@ public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
     @Autowired
     JPAQueryFactory query;
 
-
     public String getAddressByUserId(int user_id){
 
 
@@ -29,6 +28,20 @@ public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
                 .where(qWalletTb.user_id.eq(user_id))
                 .fetch().get(0).getAddress();
 
+    }
+
+    public boolean walletCheck(int user_id){
+
+        QWalletTb qWalletTb = QWalletTb.wallet;
+
+        if(query.selectFrom(qWalletTb)
+                .where(qWalletTb.user_id.eq(user_id))
+                .fetch().isEmpty()){
+
+            return true;
+        }else{
+            return false;
+        }
 
     }
 
