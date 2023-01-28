@@ -1,7 +1,9 @@
 package com.example.spring.spring.controller;
 
+import com.example.spring.spring.dao.StakingTb;
 import com.example.spring.spring.dao.UserTb;
 import com.example.spring.spring.dao.WalletTb;
+import com.example.spring.spring.repository.StakingRepository;
 import com.example.spring.spring.repository.UserRepository;
 import com.example.spring.spring.repository.WalletRepository;
 import com.example.spring.spring.utils.JwtTokenProvider;
@@ -42,6 +44,8 @@ public class HomeController {
     @Autowired
     private WalletRepository walletRepository;
 
+    @Autowired
+    private StakingRepository stakingRepository;
 
 
 
@@ -184,5 +188,56 @@ public class HomeController {
         return result;
     }
 
+    @RequestMapping(value = "/staking/add", method = RequestMethod.POST)
+    public HashMap staking_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int coin = Integer.parseInt(data.get("coin").toString());
+
+        //지갑을 선택해서 지갑에 있는 돈으로 스테이킹
+        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
+        String name = data.get("name").toString();
+
+        // ex 스테이킹한 금액의 0.05센트를 1년 경과 시 지급
+        double interest_rate = 0.05;
+
+        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
+
+        if(walletTb.getCoin() >= coin){
+
+            double total = walletTb.getCoin() - coin;
+            walletTb.setCoin(total);
+            walletRepository.save(walletTb);
+
+            StakingTb stakingTb = new StakingTb();
+            LocalDate now = LocalDate.now();
+            LocalDate afterOneYear = now.plusYears(1);
+            Date date = new Date();
+
+            stakingTb.setWallet_id(wallet_id);
+            stakingTb.setName(name);
+            stakingTb.setExpire_day(afterOneYear);
+            stakingTb.setCreated_date(now);
+            stakingTb.setReward_amount(coin);
+            stakingTb.setLast_modified_date(now);
+
+            stakingRepository.save(stakingTb);
+
+            result.put("resultCode", "true");
+
+        }else{
+            result.put("message", "over");
+            result.put("resultCode", "false");
+        }
+
+        return result;
+    }
 
 }
