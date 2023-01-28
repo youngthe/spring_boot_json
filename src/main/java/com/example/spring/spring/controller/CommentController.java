@@ -53,7 +53,7 @@ public class CommentController {
                 result.put("resultCode", "true");
 
             }else{
-                result.put("message", "don't have authority");
+                result.put("message", "unauthorized");
                 result.put("resultCode", "false");
             }
 
@@ -167,7 +167,7 @@ public class CommentController {
             result.put("resultCode", "true");
 
         }else{
-            result.put("message", "authority");
+            result.put("message", "unauthorized");
             result.put("resultCode", "false");
             return result;
         }

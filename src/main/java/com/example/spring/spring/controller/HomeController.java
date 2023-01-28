@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class HomeController {
@@ -144,6 +145,39 @@ public class HomeController {
             result.put("resultCode", "true");
 
         }catch (Exception e){
+            result.put("resultCode", "false");
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = "/wallet/modify", method = RequestMethod.POST)
+    public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
+        String wallet_address = data.get("address").toString();
+
+        try{
+            WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
+
+            if(walletTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader)){
+                walletTb.setAddress(wallet_address);
+                walletRepository.save(walletTb);
+                result.put("resultCode", "true");
+            }else{
+                result.put("message","unauthorized");
+                result.put("resultCode", "false");
+            }
+
+        } catch (Exception e){
             result.put("resultCode", "false");
         }
 

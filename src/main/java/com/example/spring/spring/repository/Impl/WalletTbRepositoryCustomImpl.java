@@ -21,7 +21,6 @@ public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
 
     public String getAddressByUserId(int user_id){
 
-
         QWalletTb qWalletTb = QWalletTb.wallet;
 
         return query.selectFrom(qWalletTb)
@@ -45,4 +44,13 @@ public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
 
     }
 
+    public WalletTb getWalletByWallet_id(int wallet_id){
+
+        QWalletTb qWalletTb = QWalletTb.wallet;
+
+        return query.selectFrom(qWalletTb)
+                .where(qWalletTb.wallet_id.eq(wallet_id))
+                .fetchOne();
+
+    }
 }

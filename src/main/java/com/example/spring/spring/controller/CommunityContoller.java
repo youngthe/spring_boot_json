@@ -224,8 +224,8 @@ public class CommunityContoller {
                 result.put("resultCode", "true");
 
             } else {
-                log.info("don't have authority");
-                result.put("message","don't have authority");
+                log.info("unauthorized");
+                result.put("message","unauthorized");
                 result.put("resultCode", "false");
             }
         }catch(Exception e){
@@ -263,7 +263,7 @@ public class CommunityContoller {
                 result.put("resultCode", "true");
 
             }else{
-                result.put("message", "don't have authority");
+                result.put("message", "unauthorized");
                 result.put("resultCode", "false");
             }
 
