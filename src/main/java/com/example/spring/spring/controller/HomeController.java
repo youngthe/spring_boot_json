@@ -223,10 +223,11 @@ public class HomeController {
 
             stakingTb.setWallet_id(wallet_id);
             stakingTb.setName(name);
-            stakingTb.setExpire_day(afterOneYear);
+            stakingTb.setExpire_date(afterOneYear);
             stakingTb.setCreated_date(now);
             stakingTb.setReward_amount(coin);
             stakingTb.setLast_modified_date(now);
+            stakingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
 
             stakingRepository.save(stakingTb);
 
@@ -234,6 +235,39 @@ public class HomeController {
 
         }else{
             result.put("message", "over");
+            result.put("resultCode", "false");
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = "/staking/cancel", method = RequestMethod.POST)
+    public HashMap staking_cancel(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int staking_id = Integer.parseInt(data.get("staking_id").toString());
+        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
+
+        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
+        StakingTb stakingTb = stakingRepository.getStakingByStakingId(staking_id);
+        if(jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()){
+
+            double reward = stakingTb.getReward_amount();
+            walletTb.setCoin(walletTb.getCoin()+reward);
+            walletRepository.save(walletTb);
+            stakingRepository.delete(stakingTb);
+            result.put("resultCode", "true");
+
+        }else{
+
+            result.put("message", "unauthority");
             result.put("resultCode", "false");
         }
 
