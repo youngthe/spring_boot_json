@@ -1,8 +1,6 @@
 package com.example.spring.spring.controller;
 
-import com.example.spring.spring.dao.StakingTb;
-import com.example.spring.spring.dao.UserTb;
-import com.example.spring.spring.dao.WalletTb;
+import com.example.spring.spring.dao.*;
 import com.example.spring.spring.repository.StakingRepository;
 import com.example.spring.spring.repository.UserRepository;
 import com.example.spring.spring.repository.WalletRepository;
@@ -11,6 +9,8 @@ import org.apache.commons.logging.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -123,8 +123,9 @@ public class HomeController {
             return result;
         }
     }
-    @RequestMapping(value = "/wallet/add", method = RequestMethod.POST)
-    public HashMap wallet_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+
+    @RequestMapping(value = "/mypage", method = RequestMethod.GET)
+    public HashMap mypage(@RequestHeader("jwt") String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -134,140 +135,41 @@ public class HomeController {
             return result;
         }
 
-        String address = data.get("address").toString();
+        int user_id = jwtTokenProvider.getUserId(tokenHeader);
 
         try{
+            WalletTb walletTb = walletRepository.getWalletByUser_id(user_id);
+            UserTb userTb = userRepository.getUserTbByUserId(user_id);
+            StakingTb stakingTb = stakingRepository.getStakingBtByUserId(user_id);
 
-            LocalDate now = LocalDate.now();
-            WalletTb walletTb = new WalletTb();
-            walletTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-            walletTb.setAddress(address);
-            walletTb.setCreated_date(now);
-            walletTb.setLast_modified_date(now);
-            walletTb.setCoin(0);
-            walletRepository.save(walletTb);
+            JSONArray walletArray = new JSONArray();
+            JSONArray userArray = new JSONArray();
+            JSONArray stakingArray = new JSONArray();
+            JSONObject temp1 = new JSONObject();
+
+
+            temp1.put("address", walletTb.getAddress());
+            temp1.put("coin", walletTb.getCoin());
+            walletArray.put(temp1);
+
+            JSONObject temp2 = new JSONObject();
+            temp2.put("name", userTb.getName());
+            userArray.put(temp2);
+
+            JSONObject temp3 = new JSONObject();
+            temp3.put("name", stakingTb.getName());
+            temp3.put("reward", stakingTb.getReward_amount());
+            temp3.put("create_date", stakingTb.getCreated_date());
+            stakingArray.put(temp3);
+
+            result.put("wallet", walletArray.toString());
+            result.put("staking", stakingArray.toString());
+            result.put("user", userArray.toString());
             result.put("resultCode", "true");
-
-        }catch (Exception e){
-            result.put("resultCode", "false");
-        }
-
-        return result;
-    }
-
-    @RequestMapping(value = "/wallet/modify", method = RequestMethod.POST)
-    public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
-
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
             return result;
-        }
 
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-        String wallet_address = data.get("address").toString();
-
-        try{
-            WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
-
-            if(walletTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader)){
-                walletTb.setAddress(wallet_address);
-                walletRepository.save(walletTb);
-                result.put("resultCode", "true");
-            }else{
-                result.put("message","unauthorized");
-                result.put("resultCode", "false");
-            }
-
-        } catch (Exception e){
-            result.put("resultCode", "false");
-        }
-
-        return result;
-    }
-
-    @RequestMapping(value = "/staking/add", method = RequestMethod.POST)
-    public HashMap staking_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
-
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        int coin = Integer.parseInt(data.get("coin").toString());
-
-        //지갑을 선택해서 지갑에 있는 돈으로 스테이킹
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-        String name = data.get("name").toString();
-
-        // ex 스테이킹한 금액의 0.05센트를 1년 경과 시 지급
-        double interest_rate = 0.05;
-
-        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
-
-        if(walletTb.getCoin() >= coin){
-
-            double total = walletTb.getCoin() - coin;
-            walletTb.setCoin(total);
-            walletRepository.save(walletTb);
-
-            StakingTb stakingTb = new StakingTb();
-            LocalDate now = LocalDate.now();
-            LocalDate afterOneYear = now.plusYears(1);
-            Date date = new Date();
-
-            stakingTb.setWallet_id(wallet_id);
-            stakingTb.setName(name);
-            stakingTb.setExpire_date(afterOneYear);
-            stakingTb.setCreated_date(now);
-            stakingTb.setReward_amount(coin);
-            stakingTb.setLast_modified_date(now);
-            stakingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-
-            stakingRepository.save(stakingTb);
-
-            result.put("resultCode", "true");
-
-        }else{
-            result.put("message", "over");
-            result.put("resultCode", "false");
-        }
-
-        return result;
-    }
-
-    @RequestMapping(value = "/staking/cancel", method = RequestMethod.POST)
-    public HashMap staking_cancel(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
-
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        int staking_id = Integer.parseInt(data.get("staking_id").toString());
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-
-        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
-        StakingTb stakingTb = stakingRepository.getStakingByStakingId(staking_id);
-        if(jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()){
-
-            double reward = stakingTb.getReward_amount();
-            walletTb.setCoin(walletTb.getCoin()+reward);
-            walletRepository.save(walletTb);
-            stakingRepository.delete(stakingTb);
-            result.put("resultCode", "true");
-
-        }else{
-
-            result.put("message", "unauthority");
+        }catch(Exception e){
+            result.put("message", "error");
             result.put("resultCode", "false");
         }
 

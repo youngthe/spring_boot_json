@@ -53,4 +53,15 @@ public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
                 .fetchOne();
 
     }
+
+    @Override
+    public WalletTb getWalletByUser_id(int user_id) {
+
+        QWalletTb qWalletTb = QWalletTb.wallet;
+
+        return query.selectFrom(qWalletTb)
+                .where(qWalletTb.user_id.eq(user_id))
+                .fetchOne();
+
+    }
 }
