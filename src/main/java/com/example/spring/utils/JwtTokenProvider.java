@@ -17,7 +17,7 @@ public class JwtTokenProvider {
     private String secretKey = "myproject";
 
 
-    private long tokenValidTime = 60 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
+    private long tokenValidTime = 99999999 * 60 * 1000L; //맨앞에 꺼 수정(분 단위)
 
 
     // 객체 초기화, secretKey를 Base64로 인코딩한다.

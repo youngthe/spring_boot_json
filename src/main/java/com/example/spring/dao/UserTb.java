@@ -1,7 +1,9 @@
 package com.example.spring.dao;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.types.EntityPath;
+import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.annotations.Columns;
 
 import javax.persistence.*;
@@ -64,4 +66,16 @@ public class UserTb {
     public void setRole(String role) {
         this.role = role;
     }
+
+    @JsonProperty("origin")
+    private String origin;
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
+    }
+
 }

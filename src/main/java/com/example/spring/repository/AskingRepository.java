@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AskingRepository extends JpaRepository<AskingTb, Integer>, AskingRepositoryCustom{
+public interface AskingRepository extends JpaRepository<AskingTb, Integer>, AskingTbRepositoryCustom {
 
     @Override
     List<AskingTb> findAllById(Iterable<Integer> integers);

@@ -1,7 +1,7 @@
 package com.example.spring.repository;
 
 
-public interface AskingRepositoryCustom {
+public interface AskingTbRepositoryCustom {
 
 
 }

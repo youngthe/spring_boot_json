@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 
 @Repository
-public interface StakingRepository extends JpaRepository<StakingTb, Integer>, StakingRepositoryCustom{
+public interface StakingRepository extends JpaRepository<StakingTb, Integer>, StakingTbRepositoryCustom {
 
 }
