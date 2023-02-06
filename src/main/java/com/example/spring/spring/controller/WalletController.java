@@ -169,20 +169,20 @@ public class WalletController {
         int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
 
         WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
-        StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
-        if(jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()){
+//        StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
+//        if(jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()){
 
-            double reward = stakingTb.getReward_amount();
-            walletTb.setCoin(walletTb.getCoin()+reward);
-            walletRepository.save(walletTb);
-            stakingRepository.delete(stakingTb);
-            result.put("resultCode", "true");
+//            double reward = stakingTb.getReward_amount();
+//            walletTb.setCoin(walletTb.getCoin()+reward);
+//            walletRepository.save(walletTb);
+//            stakingRepository.delete(stakingTb);
+//            result.put("resultCode", "true");
 
-        }else{
-
-            result.put("message", "unauthority");
-            result.put("resultCode", "false");
-        }
+//        }else{
+//
+//            result.put("message", "unauthority");
+//            result.put("resultCode", "false");
+//        }
 
         return result;
     }

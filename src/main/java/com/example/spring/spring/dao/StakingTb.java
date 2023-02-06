@@ -7,8 +7,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 
-@Getter
-@Setter
+
 @Entity
 @Table(name = "staking")
 public class StakingTb {
@@ -16,7 +15,7 @@ public class StakingTb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "staking_id")
-    private int stakingId;
+    private int staking_id;
 
     @Column(name = "wallet_id")
     private int wallet_id;
@@ -39,4 +38,68 @@ public class StakingTb {
     @Column(name = "name")
     private String name;
 
+
+    public int getStaking_id() {
+        return staking_id;
+    }
+
+    public void setStakingId(int staking_id) {
+        this.staking_id = staking_id;
+    }
+
+    public int getWallet_id() {
+        return wallet_id;
+    }
+
+    public void setWallet_id(int wallet_id) {
+        this.wallet_id = wallet_id;
+    }
+
+    public int getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(int user_id) {
+        this.user_id = user_id;
+    }
+
+    public double getReward_amount() {
+        return reward_amount;
+    }
+
+    public void setReward_amount(double reward_amount) {
+        this.reward_amount = reward_amount;
+    }
+
+    public LocalDate getExpire_date() {
+        return expire_date;
+    }
+
+    public void setExpire_date(LocalDate expire_date) {
+        this.expire_date = expire_date;
+    }
+
+    public LocalDate getCreated_date() {
+        return created_date;
+    }
+
+    public void setCreated_date(LocalDate created_date) {
+        this.created_date = created_date;
+    }
+
+    public LocalDate getLast_modified_date() {
+        return last_modified_date;
+    }
+
+    public void setLast_modified_date(LocalDate last_modified_date) {
+        this.last_modified_date = last_modified_date;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

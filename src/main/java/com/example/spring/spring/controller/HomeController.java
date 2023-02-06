@@ -44,9 +44,6 @@ public class HomeController {
     @Autowired
     private WalletRepository walletRepository;
 
-    @Autowired
-    private StakingRepository stakingRepository;
-
 
 
 
@@ -140,7 +137,7 @@ public class HomeController {
         try{
             WalletTb walletTb = walletRepository.getWalletByUser_id(user_id);
             UserTb userTb = userRepository.getUserTbByUserId(user_id);
-            StakingTb stakingTb = stakingRepository.getStakingBtByUserId(user_id);
+//            StakingTb stakingTb = stakingRepository.getStakingBtByUserId(user_id);
 
             JSONArray walletArray = new JSONArray();
             JSONArray userArray = new JSONArray();
@@ -156,11 +153,11 @@ public class HomeController {
             temp2.put("name", userTb.getName());
             userArray.put(temp2);
 
-            JSONObject temp3 = new JSONObject();
-            temp3.put("name", stakingTb.getName());
-            temp3.put("reward", stakingTb.getReward_amount());
-            temp3.put("create_date", stakingTb.getCreated_date());
-            stakingArray.put(temp3);
+//            JSONObject temp3 = new JSONObject();
+//            temp3.put("name", stakingTb.getName());
+//            temp3.put("reward", stakingTb.getReward_amount());
+//            temp3.put("create_date", stakingTb.getCreated_date());
+//            stakingArray.put(temp3);
 
             result.put("wallet", walletArray.toString());
             result.put("staking", stakingArray.toString());

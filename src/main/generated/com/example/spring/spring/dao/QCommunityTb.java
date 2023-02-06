@@ -7,7 +7,6 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -18,9 +17,9 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     private static final long serialVersionUID = -1586283862L;
 
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QCommunityTb communityTb = new QCommunityTb("communityTb");
+
+    public final NumberPath<Integer> community_id = createNumber("community_id", Integer.class);
 
     public final StringPath content = createString("content");
 
@@ -30,31 +29,20 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
 
-    public final NumberPath<Integer> id = createNumber("id", Integer.class);
-
     public final StringPath title = createString("title");
 
-    public final QUserTb user;
+    public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 
     public QCommunityTb(String variable) {
-        this(CommunityTb.class, forVariable(variable), INITS);
+        super(CommunityTb.class, forVariable(variable));
     }
 
     public QCommunityTb(Path<? extends CommunityTb> path) {
-        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
+        super(path.getType(), path.getMetadata());
     }
 
     public QCommunityTb(PathMetadata metadata) {
-        this(metadata, PathInits.getFor(metadata, INITS));
-    }
-
-    public QCommunityTb(PathMetadata metadata, PathInits inits) {
-        this(CommunityTb.class, metadata, inits);
-    }
-
-    public QCommunityTb(Class<? extends CommunityTb> type, PathMetadata metadata, PathInits inits) {
-        super(type, metadata, inits);
-        this.user = inits.isInitialized("user") ? new QUserTb(forProperty("user")) : null;
+        super(CommunityTb.class, metadata);
     }
 
 }

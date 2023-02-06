@@ -1,14 +1,10 @@
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/test
+    url: jdbc:mysql://localhost:3306/test
     username: root
     password: test
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
-server:
-  servlet:
-    session:
-      timeout: 30m      # 60m * 24h * 30d
+#    database-platform: org.hibernate.dialect.MariaDB103Dialect

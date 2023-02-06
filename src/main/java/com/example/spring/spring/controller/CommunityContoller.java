@@ -43,7 +43,7 @@ public class CommunityContoller {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     @RequestMapping(value = "/community", method = RequestMethod.GET)
-    public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) throws JSONException {
+    public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
         int nowpage = Integer.parseInt(data.get("nowpage").toString());
@@ -309,11 +309,4 @@ public class CommunityContoller {
         return result;
 
     }
-
-    @RequestMapping(value = "/site")
-    public String site (){
-
-        return "/community/community_write";
-    }
-
 }

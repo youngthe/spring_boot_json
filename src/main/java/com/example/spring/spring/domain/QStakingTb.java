@@ -11,7 +11,7 @@ import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 public class QStakingTb extends EntityPathBase<StakingTb>{
 
         public static final QStakingTb stakingTb = new QStakingTb("staking");
-        public final NumberPath<Integer> staking_id = createNumber("stakingId", Integer.class);
+        public final NumberPath<Integer> staking_id = createNumber("staking_id", Integer.class);
         public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
         public final NumberPath<Integer> wallet_id = createNumber("wallet_id", Integer.class);
         public final StringPath expire_date = createString("expire_date");

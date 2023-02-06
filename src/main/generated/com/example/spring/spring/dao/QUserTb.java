@@ -7,7 +7,6 @@ import com.querydsl.core.types.dsl.*;
 import com.querydsl.core.types.PathMetadata;
 import javax.annotation.processing.Generated;
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
@@ -22,13 +21,13 @@ public class QUserTb extends EntityPathBase<UserTb> {
 
     public final StringPath account = createString("account");
 
-    public final ListPath<CommunityTb, QCommunityTb> CommunityTb = this.<CommunityTb, QCommunityTb>createList("CommunityTb", CommunityTb.class, QCommunityTb.class, PathInits.DIRECT2);
-
-    public final NumberPath<Integer> id = createNumber("id", Integer.class);
-
     public final StringPath name = createString("name");
 
     public final StringPath pw = createString("pw");
+
+    public final StringPath role = createString("role");
+
+    public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 
     public QUserTb(String variable) {
         super(UserTb.class, forVariable(variable));
