@@ -9,6 +9,11 @@ import com.example.spring.repository.CommunityRepository;
 import com.example.spring.repository.LikeRepository;
 import com.example.spring.repository.UserRepository;
 import com.example.spring.utils.JwtTokenProvider;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,12 +49,21 @@ public class CommunityContoller {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
+
+    @ApiOperation(value = "게시판", notes = "게시글을 보여주는 게시판 페이지")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "nowpage", value = "현재 페이지 번호", required = true),
+            @ApiImplicitParam(name = "count", value = "보여줄 게시글 갯수", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode, community")
+    })
     @RequestMapping(value = "/community", method = RequestMethod.GET)
-    public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
         int nowpage = Integer.parseInt(data.get("nowpage").toString());
-        int countpage = Integer.parseInt(data.get("countpage").toString());
+        int countpage = Integer.parseInt(data.get("count").toString());
 
         int start = countpage*nowpage;
         int end = countpage*(nowpage+1) - 1;
@@ -77,11 +91,10 @@ public class CommunityContoller {
                     temp.put("date", communityTbList.get(i).getDate());
                     temp.put("hits", communityTbList.get(i).getHits());
                     temp.put("user_id", communityTbList.get(i).getUser_id());
-                    System.out.println(temp);
                     communityArray.put(temp);
             }
             System.out.println(communityArray);
-            result.put("list",communityArray.toString());
+            result.put("community",communityArray.toString());
             result.put("resultCode", "true");
             return result;
         }catch (Exception e){
@@ -91,13 +104,25 @@ public class CommunityContoller {
             return result;
         }
     }
+    
+    @ApiOperation(value = "게시글 쓰기", notes = "게시글 쓰는 페이지")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "title", value = "제목", required = true),
+            @ApiImplicitParam(name = "content", value = "본문", required = true),
+            @ApiImplicitParam(name = "upload", value = "이미지"),
 
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/community/write", method = RequestMethod.POST)
-    public HashMap community_save(@RequestHeader("jwt") String tokenHeader,
-                                  @RequestParam(value = "upload", required = false) MultipartFile file, @RequestParam("title") String title, @RequestParam("content") String content) throws IOException{
+    public HashMap community_save(@RequestHeader("token") String tokenHeader,
+                                  @RequestParam(value = "file", required = false) MultipartFile file, @RequestBody HashMap<String, Object> data) throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
         String filename = null;
+        String title = data.get("title").toString();
+        String content = data.get("content").toString();
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
@@ -146,9 +171,18 @@ public class CommunityContoller {
 
     }
 
+    @ApiOperation(value = "게시글 상세 페이지", notes = "제목 뿐만 아니라 본문이 있는 페이지")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "title", value = "제목", required = true),
+            @ApiImplicitParam(name = "content", value = "본문", required = true),
+            @ApiImplicitParam(name = "upload", value = "이미지"),
 
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode, community, comment")
+    })
     @RequestMapping(value = "/community/detail", method = RequestMethod.GET)
-    public HashMap community_detail(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap community_detail(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
 
         int community_id = Integer.parseInt(data.get("community_id").toString());
         HashMap<String, Object> result = new HashMap<>();
@@ -199,9 +233,16 @@ public class CommunityContoller {
     }
 
 
+    @ApiOperation(value = "게시글 삭제", notes = "게시글 번호로 게시글 삭제")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "community_id", value = "게시글 id", required = true),
 
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode, community, comment")
+    })
     @RequestMapping(value= "/community/delete", method = RequestMethod.GET)
-    public HashMap community_delete(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap community_delete(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
 
         int community_id = Integer.parseInt(data.get("community_id").toString());
 
@@ -237,9 +278,19 @@ public class CommunityContoller {
 
         return result;
     }
+    
+    @ApiOperation(value = "게시글 수정", notes = "게시글 번호로 게시글 수정")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "community_id", value = "게시글 id", required = true),
+            @ApiImplicitParam(name = "title", value = "변경할 제목", required = true),
+            @ApiImplicitParam(name = "content", value = "변경할 본문", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
 
     @RequestMapping(value = "/community/modify", method = RequestMethod.POST)
-    public HashMap community_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) throws IOException {
+    public HashMap community_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) throws IOException {
 
         HashMap<String, Object> result =new HashMap<>();
         int community_id = Integer.parseInt(data.get("community_id").toString());
@@ -278,8 +329,15 @@ public class CommunityContoller {
         return result;
     }
 
+    @ApiOperation(value = "게시글 좋아요", notes = "게시글 좋아요 버튼")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "community_id", value = "게시글 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value="/community/likes", method = RequestMethod.GET)
-    public HashMap heart_push(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap heart_push(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
 
         int community_id = Integer.parseInt(data.get("community_id").toString());
         HashMap<String, Object> result = new HashMap<>();

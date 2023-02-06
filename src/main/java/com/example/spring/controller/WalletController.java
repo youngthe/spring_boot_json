@@ -6,6 +6,11 @@ import com.example.spring.repository.StakingRepository;
 import com.example.spring.repository.UserRepository;
 import com.example.spring.repository.WalletRepository;
 import com.example.spring.utils.JwtTokenProvider;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +41,15 @@ public class WalletController {
     private StakingRepository stakingRepository;
 
 
+    @ApiOperation(value = "지갑 추가", notes = "지갑 주소 등록하기")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "address", value = "지갑 주소", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/wallet/add", method = RequestMethod.POST)
-    public HashMap wallet_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap wallet_add(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -68,8 +80,15 @@ public class WalletController {
         return result;
     }
 
+    @ApiOperation(value = "지갑 수정", notes = "지갑 주소 수정하기")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "지갑 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/wallet/modify", method = RequestMethod.POST)
-    public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -100,9 +119,15 @@ public class WalletController {
 
         return result;
     }
-
+    @ApiOperation(value = "스테이킹 추가", notes = "코인으로 스테이킹 등록")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "coin", value = "스테이킹할 코인 갯수", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/staking/add", method = RequestMethod.POST)
-    public HashMap staking_add(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap staking_add(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -154,8 +179,16 @@ public class WalletController {
         return result;
     }
 
+    @ApiOperation(value = "스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "staking_id", value = "스테이킹 id", required = true),
+            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/staking/cancel", method = RequestMethod.POST)
-    public HashMap staking_cancel(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap staking_cancel(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -169,20 +202,19 @@ public class WalletController {
         int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
 
         WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
-//        StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
-//        if(jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()){
+        StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
 
-//            double reward = stakingTb.getReward_amount();
-//            walletTb.setCoin(walletTb.getCoin()+reward);
-//            walletRepository.save(walletTb);
-//            stakingRepository.delete(stakingTb);
-//            result.put("resultCode", "true");
+        if(jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()){
+            double reward = stakingTb.getReward_amount();
+            walletTb.setCoin(walletTb.getCoin()+reward);
+            walletRepository.save(walletTb);
+            stakingRepository.delete(stakingTb);
+            result.put("resultCode", "true");
 
-//        }else{
-//
-//            result.put("message", "unauthority");
-//            result.put("resultCode", "false");
-//        }
+        }else{
+            result.put("message", "unauthority");
+            result.put("resultCode", "false");
+        }
 
         return result;
     }

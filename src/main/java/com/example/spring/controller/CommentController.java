@@ -4,6 +4,11 @@ import com.example.spring.dao.CommentTb;
 import com.example.spring.repository.CommentRepository;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +30,15 @@ public class CommentController {
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
 
+    @ApiOperation(value = "댓글 삭제", notes = "게시글에 작성된 댓글 삭제, * 대댓글 포함 *")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "comment_id", value = "댓글 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value="/community/comment/delete", method = RequestMethod.GET)
-    public HashMap comment_delete(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap comment_delete(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
         HashMap<String, Object> result = new HashMap<>();
 
         int comment_id = Integer.parseInt(data.get("comment_id").toString());
@@ -65,8 +77,16 @@ public class CommentController {
         }
     }
 
+    @ApiOperation(value = "댓글 작성", notes = "게시글에 댓글 작성")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "community_id", value = "게시글 id", required = true),
+            @ApiImplicitParam(name = "comment", value = "댓글 내용", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/community/comments/write", method = RequestMethod.POST)
-    public HashMap comment_write(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap comment_write(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         String comment = data.get("comment").toString();
         int community_id = Integer.parseInt(data.get("community_id").toString());
@@ -100,11 +120,19 @@ public class CommentController {
 
     }
 
+    @ApiOperation(value = "대댓글 작성", notes = "게시글에 작성된 댓글에 댓글을 다는 엔드포인트")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "comment_id", value = "댓글 id", required = true),
+            @ApiImplicitParam(name = "comment", value = "대댓글 내용", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/community/recomment/write", method = RequestMethod.POST)
-    public HashMap recomment_write(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader) {
+    public HashMap recomment_write(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         String comment = data.get("comment").toString();
-        int commentId = Integer.parseInt(data.get("commentId").toString());
+        int commentId = Integer.parseInt(data.get("comment_id").toString());
 
         HashMap<String, Object> result = new HashMap<>();
         if(!jwtTokenProvider.validateToken(tokenHeader)){
@@ -138,9 +166,16 @@ public class CommentController {
 
     }
 
-
+    @ApiOperation(value = "댓글 수정", notes = "게시글에 작성된 댓글 수정, * 대댓글 포함 *")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "comment_id", value = "댓글 id", required = true),
+            @ApiImplicitParam(name = "comment", value = "수정할 대댓글 내용", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
     @RequestMapping(value = "/community/comment/modify", method = RequestMethod.POST)
-    public HashMap comment_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("jwt") String tokenHeader){
+    public HashMap comment_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
 

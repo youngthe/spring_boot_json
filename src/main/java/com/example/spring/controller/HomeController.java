@@ -127,11 +127,11 @@ public class HomeController {
             return result;
         }
     }
-    @ApiOperation(value = "내 정보 확인", notes = "현재 로그인 되어 있는 사용자의 정보, 지갑, 내 스테이킹 현황 보여주는 페이지")
+    @ApiOperation(value = "내 정보 확인", notes = "현재 로그인 되어 있는 사용자의 정보, 지갑, 내 스테이킹 정보 주는 엔드포인트")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode, wallet, staking, user")
     })
-    @RequestMapping(value = "/mypage", method = RequestMethod.GET)
+    @RequestMapping(value = "/myinfo", method = RequestMethod.GET)
     public HashMap mypage(@RequestHeader("token") String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
