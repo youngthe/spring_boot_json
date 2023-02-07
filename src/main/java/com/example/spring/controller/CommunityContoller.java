@@ -33,18 +33,18 @@ import java.util.*;
 public class CommunityContoller {
 
     @Autowired
-    CommunityRepository communityRepository;
+    private CommunityRepository communityRepository;
     @Autowired
-    CommentRepository commentRepository;
+    private CommentRepository commentRepository;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
+    private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    LikeRepository likeRepository;
+    private LikeRepository likeRepository;
 
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());

@@ -18,14 +18,13 @@ import java.time.LocalDate;
 import java.util.HashMap;
 
 @RestController
-@Api
 public class CommentController {
 
     @Autowired
-    CommentRepository commentRepository;
+    private CommentRepository commentRepository;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
+    private JwtTokenProvider jwtTokenProvider;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 

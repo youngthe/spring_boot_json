@@ -27,8 +27,6 @@ public class UserTb {
     @Column(length = 20)
     private String name;
 
-    @Column(length = 10)
-    private String role;
 
     public String getName() {
         return name;
@@ -59,23 +57,6 @@ public class UserTb {
         this.pw = pw;
     }
 
-    public String getRole() {
-        return role;
-    }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    @JsonProperty("origin")
-    private String origin;
-
-    public String getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
 
 }

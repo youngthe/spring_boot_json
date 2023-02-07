@@ -29,16 +29,16 @@ public class HomeController {
     private UserRepository userRepository;
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
+    private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private WalletRepository walletRepository;
 
     @Autowired
-    StakingRepository stakingRepository;
+    private StakingRepository stakingRepository;
 
 
     @ApiOperation(value = "서버 동작 확인용", notes = "hello 메세지만 뿌림")
