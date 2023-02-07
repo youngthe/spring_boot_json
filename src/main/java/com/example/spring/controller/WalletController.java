@@ -50,7 +50,7 @@ public class WalletController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/wallet/add", method = RequestMethod.POST)
+    @RequestMapping(value = "/wallet", method = RequestMethod.POST)
     public HashMap wallet_add(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
@@ -84,24 +84,25 @@ public class WalletController {
 
     @ApiOperation(value = "지갑 수정", notes = "지갑 주소 수정하기")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "id", value = "지갑 id", required = true),
+            @ApiImplicitParam(name = "address", value = "지갑 주소", required = true),
+            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/wallet/modify", method = RequestMethod.POST)
+    @RequestMapping(value = "/wallet", method = RequestMethod.PATCH)
     public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
-
+        
         if (!jwtTokenProvider.validateToken(tokenHeader)) {
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
         String wallet_address = data.get("address").toString();
+        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
 
         try {
             WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
@@ -129,7 +130,7 @@ public class WalletController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/staking/add", method = RequestMethod.POST)
+    @RequestMapping(value = "/staking", method = RequestMethod.POST)
     public HashMap staking_add(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
@@ -190,7 +191,7 @@ public class WalletController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/staking/cancel", method = RequestMethod.POST)
+    @RequestMapping(value = "/staking/{staking_id}", method = RequestMethod.DELETE)
     public HashMap staking_cancel(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
@@ -230,13 +231,12 @@ public class WalletController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/asking/output", method = RequestMethod.POST)
+    @RequestMapping(value = "/wallet/order", method = RequestMethod.POST)
     public HashMap asking_output(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
         double amount = Double.parseDouble(data.get("amount").toString());
         int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
 
         HashMap<String, Object> result = new HashMap<>();
-
 
         return result;
     }
@@ -249,7 +249,7 @@ public class WalletController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/asking/input", method = RequestMethod.POST)
+    @RequestMapping(value = "/wallet/order", method = RequestMethod.PUT)
     public HashMap asking_input(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
         String tx = data.get("tx").toString();
         double amount = Double.parseDouble(data.get("value").toString());

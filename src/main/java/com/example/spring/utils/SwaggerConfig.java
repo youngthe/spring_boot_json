@@ -6,6 +6,7 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -32,6 +33,7 @@ public class SwaggerConfig  {
         return new ApiInfoBuilder()
                 .title("Practice Swagger")
                 .description("practice swagger config")
+                .contact(new Contact("테이블 구조","https://www.erdcloud.com/p/CDxQX6dswZ8aLuEkp",""))
                 .version("1.0")
                 .build();
     }

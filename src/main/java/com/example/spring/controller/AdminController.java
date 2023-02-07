@@ -61,8 +61,8 @@ public class AdminController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value="/admin/asking", method = RequestMethod.GET)
-    public HashMap admin_asking(@RequestHeader("token") String tokenHeader){
+    @RequestMapping(value="/admin/{asking_id}", method = RequestMethod.POST)
+    public HashMap admin_asking(@RequestHeader("token") String tokenHeader, @PathVariable("asking_id") int asking_id){
 
         HashMap<String,Object> result = new HashMap<>();
         UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
@@ -80,4 +80,25 @@ public class AdminController {
 
     }
 
+    @ApiOperation(value = "입금 또는 출금 승인 거절", notes = "입금 출금 요청 승인 확인")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/{asking_id}", method = RequestMethod.DELETE)
+    public HashMap admin_delete(@RequestHeader("token") String tokenHeader, @PathVariable("asking_id") int asking_id){
+
+        HashMap<String,Object> result = new HashMap<>();
+        UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+        if(jwtTokenProvider.validateToken(tokenHeader) && Objects.equals(usertb.getAccount(), "admin")){
+            List<AskingTb> askinglist = askingRepository.findAll();
+            result.put("resultarray", askinglist);
+            return result;
+        }else{
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+    }
 }
