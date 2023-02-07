@@ -49,7 +49,6 @@ public class CommunityContoller {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
-
     @ApiOperation(value = "게시판", notes = "게시글을 보여주는 게시판 페이지")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "nowpage", value = "현재 페이지 번호", required = true),
@@ -78,23 +77,17 @@ public class CommunityContoller {
         }
 
         try{
-            JSONArray communityArray = new JSONArray();
             List<CommunityTb> communityTbList  =  communityRepository.getCommunity();
             int communityList_maxsize = communityTbList.size();
             log.info("maxSize : {} ", communityList_maxsize);
             if(end>=communityList_maxsize) end = communityList_maxsize-1;
+            List<CommunityTb> communityTbList2 = new ArrayList<>();
 
             for(int i=start;i<=end;i++){
-                    JSONObject temp = new JSONObject();
-                    temp.put("title", communityTbList.get(i).getTitle());
-                    temp.put("content", communityTbList.get(i).getContent());
-                    temp.put("date", communityTbList.get(i).getDate());
-                    temp.put("hits", communityTbList.get(i).getHits());
-                    temp.put("user_id", communityTbList.get(i).getUser_id());
-                    communityArray.put(temp);
+                communityTbList2.add(communityTbList.get(i));
             }
-            System.out.println(communityArray);
-            result.put("community",communityArray.toString());
+
+            result.put("community",communityTbList2);
             result.put("resultCode", "true");
             return result;
         }catch (Exception e){
@@ -117,12 +110,10 @@ public class CommunityContoller {
     })
     @RequestMapping(value = "/community/write", method = RequestMethod.POST)
     public HashMap community_save(@RequestHeader("token") String tokenHeader,
-                                  @RequestParam(value = "file", required = false) MultipartFile file, @RequestBody HashMap<String, Object> data) throws IOException{
+                                  @RequestParam(value = "upload", required = false) MultipartFile file, @RequestParam("title") String title, @RequestParam("content") String content) throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
         String filename = null;
-        String title = data.get("title").toString();
-        String content = data.get("content").toString();
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
@@ -144,7 +135,6 @@ public class CommunityContoller {
         }
 
 
-
         log.info("jwt : {} ", tokenHeader);
         log.info("title {} ", title);
         log.info("content {} ", content);
@@ -159,7 +149,6 @@ public class CommunityContoller {
             communityTb.setUser_id(user.getUser_id());
             communityTb.setDate(now);
             communityRepository.save(communityTb);
-
 
             result.put("resultCode", "true");
             return result;
@@ -195,34 +184,15 @@ public class CommunityContoller {
 
         try{
 
-            JSONArray communityArray = new JSONArray();
-            JSONObject temp1 = new JSONObject();
-            JSONArray commentArray = new JSONArray();
-
             CommunityTb community = communityRepository.getCommunityById(community_id);
             List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
 
-            temp1.put("content", community.getContent());
-            temp1.put("title", community.getTitle());
-            temp1.put("date", community.getDate());
-            temp1.put("hits", community.getHits());
-            temp1.put("user_id", community.getUser_id());
-            communityArray.put(temp1);
-
-            for(CommentTb comment : commentTbList){
-                JSONObject temp2 = new JSONObject();
-                temp2.put("id", comment.getComment_id());
-                temp2.put("comment",comment.getComment());
-                temp2.put("date", comment.getDate());
-                temp2.put("parent", comment.getComment_id());
-                commentArray.put(temp2);
-            }
-
             communityRepository.Increase_like(community);
-            result.put("community", communityArray.toString());
-            result.put("comment", commentArray.toString());
+            result.put("community", community);
+            result.put("comment", commentTbList);
             result.put("resultCode", "true");
             return result;
+
         }catch(Exception e){
             System.out.println("db error");
             System.out.println(e);
@@ -292,7 +262,7 @@ public class CommunityContoller {
     @RequestMapping(value = "/community/modify", method = RequestMethod.POST)
     public HashMap community_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) throws IOException {
 
-        HashMap<String, Object> result =new HashMap<>();
+        HashMap<String, Object> result = new HashMap<>();
         int community_id = Integer.parseInt(data.get("community_id").toString());
         String title = data.get("title").toString();
         String content = data.get("content").toString();

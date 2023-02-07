@@ -1,5 +1,6 @@
 package com.example.spring;
 
+import com.example.spring.dao.AskingTb;
 import com.example.spring.repository.AskingRepository;
 import com.example.spring.utils.Calculator;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 
 @SpringBootTest
@@ -41,11 +43,15 @@ class ApplicationTests {
         System.out.println(day);
     }
 
-//    @Test
-//    void test(){
-//        AskingTb askingTb = new AskingTb();
-//        askingTb.setAmount(1);
-//        askingRepository.save(askingTb);
-//    }
+    @Test
+    void test(){
+        AskingTb askingTb = new AskingTb();
+        askingTb.setAmount(300);
+        askingTb.setInput_output(false);
+        askingTb.setStatus(false);
+        askingTb.setUser_id(2);
+        askingTb.setCreated_date(LocalDate.now());
+        askingRepository.save(askingTb);
+    }
 
 }

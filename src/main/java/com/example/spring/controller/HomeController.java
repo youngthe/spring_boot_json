@@ -102,7 +102,7 @@ public class HomeController {
 
         String account = data.get("account").toString();
         String pw = data.get("pw").toString();
-        String name = data.get("name").toString();
+        String name = data.get("nickname").toString();
 
         log.info("account : {}", account);
         log.info("pw : {}", pw);
@@ -149,29 +149,9 @@ public class HomeController {
             UserTb userTb = userRepository.getUserTbByUserId(user_id);
             StakingTb stakingTb = stakingRepository.getStakingTbByUserId(user_id);
 
-            JSONArray walletArray = new JSONArray();
-            JSONArray userArray = new JSONArray();
-            JSONArray stakingArray = new JSONArray();
-            JSONObject temp1 = new JSONObject();
-
-
-            temp1.put("address", walletTb.getAddress());
-            temp1.put("coin", walletTb.getCoin());
-            walletArray.put(temp1);
-
-            JSONObject temp2 = new JSONObject();
-            temp2.put("name", userTb.getName());
-            userArray.put(temp2);
-
-            JSONObject temp3 = new JSONObject();
-            temp3.put("name", stakingTb.getName());
-            temp3.put("reward", stakingTb.getReward_amount());
-            temp3.put("create_date", stakingTb.getCreated_date());
-            stakingArray.put(temp3);
-
-            result.put("wallet", walletArray.toString());
-            result.put("staking", stakingArray.toString());
-            result.put("user", userArray.toString());
+            result.put("wallet", walletTb);
+            result.put("staking", userTb);
+            result.put("user", stakingTb);
             result.put("resultCode", "true");
             return result;
 
