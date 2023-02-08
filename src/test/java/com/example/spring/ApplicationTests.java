@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @SpringBootTest
 class ApplicationTests {
@@ -45,13 +46,17 @@ class ApplicationTests {
 
     @Test
     void test(){
-        AskingTb askingTb = new AskingTb();
-        askingTb.setAmount(300);
-        askingTb.setInput_output(false);
-        askingTb.setStatus(false);
-        askingTb.setUser_id(2);
-        askingTb.setCreated_date(LocalDate.now());
-        askingRepository.save(askingTb);
+
+        List<AskingTb> askinglist = askingRepository.findAll();
+        System.out.println(askinglist);
+//        AskingTb askingTb = new AskingTb();
+//        //출금 요청 false, 입금 요청 true
+//        askingTb.setInput_output(false);
+//        askingTb.setCreated_date(LocalDate.now());
+//        askingTb.setStatus(true);
+//        askingTb.setUser_id(1);
+//        askingTb.setAmount(20);
+//        askingRepository.save(askingTb);
     }
 
 }

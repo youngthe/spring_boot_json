@@ -11,7 +11,7 @@ import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 public class QAskingTb extends EntityPathBase<AskingTb> {
 
     public static final QAskingTb asking = new QAskingTb("asking");
-    public final NumberPath<Integer> asking_id = createNumber("stakingId", Integer.class);
+    public final NumberPath<Integer> asking_id = createNumber("asking_id", Integer.class);
     public final NumberPath<Integer> user_id = createNumber("userId", Integer.class);
     public final NumberPath<Integer> community_id = createNumber("status", Integer.class);
     public final StringPath created_date = createString("created_date");

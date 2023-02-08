@@ -32,7 +32,7 @@ public class JwtTokenProvider {
         Date now = new Date();
 
         return Jwts.builder()
-                .setIssuer(user.getUser_id().toString())
+                .setIssuer(Integer.toString(user.getUser_id()))
 //                .setSubject(user.getRole())
                 .setIssuedAt(now) // 토큰 발행 시간 정보
                 .setExpiration(new Date(now.getTime() + tokenValidTime)) // set Expire Time

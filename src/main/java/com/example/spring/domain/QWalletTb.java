@@ -17,8 +17,6 @@ public class QWalletTb extends EntityPathBase<WalletTb> {
     public final StringPath created_date = createString("created_date");
     public final StringPath last_modified_date = createString("last_modified_date");
 
-    public final NumberPath<Double> coin =  createNumber("coin", double.class);
-
     public QWalletTb(String variable) {
         super(WalletTb.class, forVariable(variable));
     }

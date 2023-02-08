@@ -4,12 +4,16 @@ package com.example.spring.dao;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.querydsl.core.types.EntityPath;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Columns;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "user")
 public class UserTb {
@@ -27,36 +31,8 @@ public class UserTb {
     @Column(length = 20)
     private String name;
 
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-    public Integer getUser_id() {
-        return user_id;
-    }
-    public void setUser_id(Integer pk) {
-        this.user_id = pk;
-    }
-
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public String getPw() {
-        return pw;
-    }
-
-    public void setPw(String pw) {
-        this.pw = pw;
-    }
-
+    @Column(length = 20)
+    private double coin;
 
 
 }

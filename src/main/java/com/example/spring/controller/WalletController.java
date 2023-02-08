@@ -1,8 +1,10 @@
 package com.example.spring.controller;
 
+import com.example.spring.dao.AskingTb;
 import com.example.spring.dao.StakingTb;
 import com.example.spring.dao.UserTb;
 import com.example.spring.dao.WalletTb;
+import com.example.spring.repository.AskingRepository;
 import com.example.spring.repository.StakingRepository;
 import com.example.spring.repository.UserRepository;
 import com.example.spring.repository.WalletRepository;
@@ -42,6 +44,8 @@ public class WalletController {
     @Autowired
     private StakingRepository stakingRepository;
 
+    @Autowired
+    private AskingRepository askingRepository;
 
     @ApiOperation(value = "지갑 추가", notes = "지갑 주소 등록하기")
     @ApiImplicitParams({
@@ -223,24 +227,6 @@ public class WalletController {
         return result;
     }
 
-    @ApiOperation(value = "출금 요청", notes = "계정에 가지고 있는 코인을 내 지갑으로 출금 요청")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "amount", value = "출금할 가격", required = true),
-            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode")
-    })
-    @RequestMapping(value = "/wallet/order", method = RequestMethod.POST)
-    public HashMap asking_output(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
-        double amount = Double.parseDouble(data.get("amount").toString());
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-
-        HashMap<String, Object> result = new HashMap<>();
-
-        return result;
-    }
-
     @ApiOperation(value = "입금 요청", notes = "지갑에서 서버계정으로 입금 요청")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "tx", value = "블록 해쉬값", required = true),
@@ -249,19 +235,80 @@ public class WalletController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/wallet/order", method = RequestMethod.PUT)
+    @RequestMapping(value = "/wallet/order", method = RequestMethod.POST)
     public HashMap asking_input(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+
         String tx = data.get("tx").toString();
         double amount = Double.parseDouble(data.get("value").toString());
 
         HashMap<String, Object> result = new HashMap<>();
 
-        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
-        if(Objects.equals(user.getAccount(), "admin")){
-
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
         }
 
-        return result;
+        try{
+            AskingTb askingTb = new AskingTb();
+            askingTb.setCreated_date(LocalDate.now());
+            askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            askingTb.setAmount(amount);
+            //출금 요청 false, 입금 요청 true
+            askingTb.setInput_output(true);
+            //state 요청 실행 전 false, 실행 후 true
+            askingTb.setStatus(false);
+            askingRepository.save(askingTb);
+            result.put("resultCode", "true");
+            return result;
+        }catch(Exception e){
+            result.put("resultCode", "false");
+            return result;
+        }
     }
+
+    @ApiOperation(value = "출금 요청", notes = "계정에 가지고 있는 코인을 내 지갑으로 출금 요청")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "amount", value = "출금할 가격", required = true),
+            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/wallet/order", method = RequestMethod.PUT)
+    public HashMap asking_output(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        double amount = Double.parseDouble(data.get("amount").toString());
+        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
+
+
+        try{
+            AskingTb askingTb = new AskingTb();
+            askingTb.setCreated_date(LocalDate.now());
+            askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            askingTb.setAmount(amount);
+            //출금 요청 false, 입금 요청 true
+            askingTb.setInput_output(false);
+            //state 요청 실행 전 false, 실행 후 true
+            askingTb.setStatus(false);
+            askingRepository.save(askingTb);
+            result.put("resultCode", "true");
+            return result;
+        }catch(Exception e){
+            result.put("resultCode", "false");
+            return result;
+        }
+
+    }
+
+
 
 }

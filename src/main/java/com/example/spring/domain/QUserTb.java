@@ -17,6 +17,7 @@ public class QUserTb extends EntityPathBase<UserTb> {
 
     public final StringPath name = createString("name");
 
+    public final NumberPath<Double> coin =  createNumber("coin", double.class);
 
     public QUserTb(String variable) {
         super(UserTb.class, forVariable(variable));
