@@ -27,6 +27,10 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public final StringPath file_name = createString("file_name");
 
+    public final NumberPath<Double> get_coin = createNumber("get_coin", Double.class);
+
+    public final BooleanPath highlight = createBoolean("highlight");
+
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
 
     public final StringPath title = createString("title");

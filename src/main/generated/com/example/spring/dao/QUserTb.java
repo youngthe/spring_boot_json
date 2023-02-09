@@ -21,6 +21,8 @@ public class QUserTb extends EntityPathBase<UserTb> {
 
     public final StringPath account = createString("account");
 
+    public final NumberPath<Double> coin = createNumber("coin", Double.class);
+
     public final StringPath name = createString("name");
 
     public final StringPath pw = createString("pw");

@@ -103,13 +103,16 @@ public class CommunityContoller {
             @ApiImplicitParam(name = "title", value = "제목", required = true),
             @ApiImplicitParam(name = "content", value = "본문", required = true),
             @ApiImplicitParam(name = "upload", value = "이미지"),
+            @ApiImplicitParam(name = "highlight", value = "글 하이라이트 여부", type = "boolean")
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
     @RequestMapping(value = "/community", method = RequestMethod.POST)
     public HashMap community_save(@RequestHeader("token") String tokenHeader,
-                                  @RequestParam(value = "upload", required = false) MultipartFile file, @RequestParam("title") String title, @RequestParam("content") String content) throws IOException{
+                                  @RequestParam(value = "upload", required = false) MultipartFile file,
+                                  @RequestParam("title") String title,
+                                  @RequestParam("content") String content, @RequestParam("highlight") boolean highlight)throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
         String filename = null;
@@ -147,6 +150,7 @@ public class CommunityContoller {
             communityTb.setContent(content);
             communityTb.setUser_id(user.getUser_id());
             communityTb.setDate(now);
+            communityTb.setHighlight(highlight);
             communityRepository.save(communityTb);
 
             result.put("resultCode", "true");
@@ -240,6 +244,7 @@ public class CommunityContoller {
             @ApiImplicitParam(name = "community_id", value = "게시글 id", required = true),
             @ApiImplicitParam(name = "title", value = "변경할 제목", required = true),
             @ApiImplicitParam(name = "content", value = "변경할 본문", required = true),
+            @ApiImplicitParam(name = "highlight", value = "하이트라이트 여부", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
@@ -251,7 +256,7 @@ public class CommunityContoller {
         HashMap<String, Object> result = new HashMap<>();
         String title = data.get("title").toString();
         String content = data.get("content").toString();
-
+        boolean highlight = Boolean.parseBoolean(data.get("highlight").toString());
         log.info("title : {}", title);
         log.info("content : {}", content);
 

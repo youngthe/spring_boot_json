@@ -1,6 +1,7 @@
 package com.example.spring.domain;
 
 import com.example.spring.dao.CommunityTb;
+import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
@@ -17,7 +18,8 @@ public class QCommunityTb extends EntityPathBase<com.example.spring.dao.Communit
     public final StringPath writer = createString("writer");
     public final StringPath date = createString("date");
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
-
+    public final NumberPath<Double> get_coin =  createNumber("get_coin", double.class);
+    public final BooleanPath highlight = createBoolean("highlight");
 
     public QCommunityTb(String variable) {
 

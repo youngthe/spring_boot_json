@@ -30,6 +30,12 @@ public class CommunityTb {
     @Column(name = "user_id")
     private int user_id;
 
+    @Column(name = "highlight")
+    private boolean highlight;
+
+    @Column(name = "get_coin")
+    private double get_coin;
+
 
     public int getUser_id() {
         return user_id;
@@ -87,5 +93,19 @@ public class CommunityTb {
         this.content = content;
     }
 
+    public boolean isHighlight() {
+        return highlight;
+    }
 
+    public void setHighlight(boolean highlight) {
+        this.highlight = highlight;
+    }
+
+    public double getGet_coin() {
+        return get_coin;
+    }
+
+    public void setGet_coin(double get_coin) {
+        this.get_coin = get_coin;
+    }
 }
