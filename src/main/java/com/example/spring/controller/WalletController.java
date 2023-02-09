@@ -173,6 +173,8 @@ public class WalletController {
             stakingTb.setCreated_date(now);
             stakingTb.setReward_amount(coin);
             stakingTb.setLast_modified_date(now);
+            stakingTb.setStart_amount(coin);
+            stakingTb.setPercent(3); //연 3 퍼센트 이자
             stakingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
 
             stakingRepository.save(stakingTb);
@@ -213,8 +215,8 @@ public class WalletController {
         StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
 
         if (jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()) {
-            double reward = stakingTb.getReward_amount();
-            walletTb.setCoin(walletTb.getCoin() + reward);
+            double start_amount = stakingTb.getStart_amount();
+            walletTb.setCoin(walletTb.getCoin() + start_amount);
             walletRepository.save(walletTb);
             stakingRepository.delete(stakingTb);
             result.put("resultCode", "true");

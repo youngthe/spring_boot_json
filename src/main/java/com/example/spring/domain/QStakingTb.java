@@ -18,7 +18,8 @@ public class QStakingTb extends EntityPathBase<StakingTb>{
         public final StringPath last_modified_date = createString("last_modified_date");
         public final NumberPath<Double> reward_amount =  createNumber("reward_amount", double.class);
         public final StringPath name = createString("name");
-
+        public final NumberPath<Double> start_amount =  createNumber("start_amount", double.class);
+        public final NumberPath<Double> percent =  createNumber("percent", double.class);
         public QStakingTb(String variable) {
 
             super(StakingTb.class, forVariable(variable));

@@ -39,5 +39,10 @@ public class StakingTb {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "percent")
+    private double percent;
+
+    @Column(name = "start_amount")
+    private double start_amount;
 
 }
