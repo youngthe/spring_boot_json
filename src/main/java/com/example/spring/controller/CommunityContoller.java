@@ -1,13 +1,7 @@
 package com.example.spring.controller;
 
-import com.example.spring.dao.CommentTb;
-import com.example.spring.dao.CommunityTb;
-import com.example.spring.dao.LikeTb;
-import com.example.spring.dao.UserTb;
-import com.example.spring.repository.CommentRepository;
-import com.example.spring.repository.CommunityRepository;
-import com.example.spring.repository.LikeRepository;
-import com.example.spring.repository.UserRepository;
+import com.example.spring.dao.*;
+import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -17,8 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +38,9 @@ public class CommunityContoller {
     @Autowired
     private LikeRepository likeRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
@@ -53,6 +48,7 @@ public class CommunityContoller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "nowpage", value = "현재 페이지 번호", required = true),
             @ApiImplicitParam(name = "count", value = "보여줄 게시글 갯수", required = true),
+            @ApiImplicitParam(name = "category", value = "카테고리", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode, community")
@@ -63,6 +59,7 @@ public class CommunityContoller {
         HashMap<String, Object> result = new HashMap<>();
         int nowpage = Integer.parseInt(data.get("nowpage").toString());
         int countpage = Integer.parseInt(data.get("count").toString());
+        String category = data.get("category").toString();
 
         int start = countpage*nowpage;
         int end = countpage*(nowpage+1) - 1;
@@ -78,16 +75,33 @@ public class CommunityContoller {
 
         try{
             List<CommunityTb> communityTbList  =  communityRepository.getCommunity();
+            List<CommunityTb> communityListByType = communityRepository.getCommunityByType(category);
             int communityList_maxsize = communityTbList.size();
-            log.info("maxSize : {} ", communityList_maxsize);
-            if(end>=communityList_maxsize) end = communityList_maxsize-1;
-            List<CommunityTb> communityTbList2 = new ArrayList<>();
+            int current_categorySize = communityListByType.size();
 
-            for(int i=start;i<=end;i++){
-                communityTbList2.add(communityTbList.get(i));
+            List<CategoryTb> categoryTb = categoryRepository.findAll();
+
+            HashMap test = new HashMap();
+            for(int i=0;i<categoryTb.size();i++){
+
+                int category_size = 0;
+                for(int j=0;j<communityList_maxsize;j++){
+                    if(communityTbList.get(j).getType().equals(categoryTb.get(i).getCategory_name())){
+                        category_size++;
+                    }
+                }
+                test.put("total", communityList_maxsize);
+                test.put(categoryTb.get(i).getCategory_name(), category_size);
             }
 
-            result.put("community",communityTbList2);
+            if(end>=current_categorySize) end = current_categorySize-1;
+            List<CommunityTb> communityTbListByorder = new ArrayList<>();
+
+            for(int i=start;i<=end;i++){
+                communityTbListByorder.add(communityListByType.get(i));
+            }
+            result.put("count_list", test);
+            result.put("community", communityTbListByorder);
             result.put("resultCode", "true");
             return result;
         }catch (Exception e){
@@ -103,7 +117,8 @@ public class CommunityContoller {
             @ApiImplicitParam(name = "title", value = "제목", required = true),
             @ApiImplicitParam(name = "content", value = "본문", required = true),
             @ApiImplicitParam(name = "upload", value = "이미지"),
-            @ApiImplicitParam(name = "highlight", value = "글 하이라이트 여부", type = "boolean")
+            @ApiImplicitParam(name = "highlight", value = "글 하이라이트 여부", type = "boolean"),
+            @ApiImplicitParam(name = "category", value = "카테고리", type ="varchar")
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
@@ -112,7 +127,8 @@ public class CommunityContoller {
     public HashMap community_save(@RequestHeader("token") String tokenHeader,
                                   @RequestParam(value = "upload", required = false) MultipartFile file,
                                   @RequestParam("title") String title,
-                                  @RequestParam("content") String content, @RequestParam("highlight") boolean highlight)throws IOException{
+                                  @RequestParam("content") String content, @RequestParam("highlight") boolean highlight,
+                                  @RequestParam("category") String category)throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
         String filename = null;
@@ -136,7 +152,6 @@ public class CommunityContoller {
 
         }
 
-
         log.info("jwt : {} ", tokenHeader);
         log.info("title {} ", title);
         log.info("content {} ", content);
@@ -151,6 +166,7 @@ public class CommunityContoller {
             communityTb.setUser_id(user.getUser_id());
             communityTb.setDate(now);
             communityTb.setHighlight(highlight);
+            communityTb.setType(category);
             communityRepository.save(communityTb);
 
             result.put("resultCode", "true");
@@ -290,6 +306,7 @@ public class CommunityContoller {
     }
 
     @ApiOperation(value = "게시글 좋아요", notes = "게시글 좋아요 버튼")
+
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
@@ -325,4 +342,88 @@ public class CommunityContoller {
         return result;
 
     }
+
+    @ApiOperation(value = "응원하기", notes = "게시글 작성자에게 응원하기")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "coin", value = "응원할 코인 금액", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/community/{community_id}", method = RequestMethod.POST)
+    public HashMap coin_push(@PathVariable ("community_id") int community_id, @RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        double coin = (double) data.get("coin");
+        //사용자가 후원할 코인이 있는지 확인해야함
+        UserTb Donator = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+        if(Donator.getCoin() >= coin){
+            //커뮤니티의 사용자에게 코인을 주는 로직
+            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
+            communityTb.setGet_coin(communityTb.getGet_coin() + coin);
+            communityRepository.save(communityTb);
+            UserTb writer = userRepository.getUserTbByUserId(communityTb.getUser_id());
+
+
+            writer.setCoin(writer.getCoin() + coin);
+            userRepository.save(writer);
+
+            UserTb writerUser = userRepository.getUserTbByUserId(writer.getUser_id());
+            writerUser.setCoin(writerUser.getCoin() + coin);
+            userRepository.save(writerUser);
+            Donator.setCoin(Donator.getCoin() - coin);
+            userRepository.save(Donator);
+
+            result.put("resultCode", "true");
+            return result;
+        }else{
+            result.put("message", "coin over");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+    }
+
+    @ApiOperation(value = "게시글 하이라이트 추가", notes = "게시글이 작성된 후 하이라이트를 추가할 때 사용")
+
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/community/highlight/{community_id}", method = RequestMethod.PUT)
+    public HashMap coin_push(@PathVariable ("community_id") int community_id, @RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+        
+        try{
+            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
+            communityTb.setHighlight(true);
+            communityRepository.save(communityTb);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+
+            result.put("resultCode", "false");
+            result.put("message", "db error");
+            return result;
+
+        }
+
+    }
+
+
 }

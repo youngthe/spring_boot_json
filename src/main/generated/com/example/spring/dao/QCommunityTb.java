@@ -35,6 +35,8 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public final StringPath title = createString("title");
 
+    public final StringPath type = createString("type");
+
     public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 
     public QCommunityTb(String variable) {

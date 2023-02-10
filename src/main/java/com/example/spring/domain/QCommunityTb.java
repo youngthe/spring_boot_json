@@ -17,6 +17,7 @@ public class QCommunityTb extends EntityPathBase<com.example.spring.dao.Communit
     public final StringPath file_name = createString("file_name");
     public final StringPath writer = createString("writer");
     public final StringPath date = createString("date");
+    public final StringPath type = createString("type");
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
     public final NumberPath<Double> get_coin =  createNumber("get_coin", double.class);
     public final BooleanPath highlight = createBoolean("highlight");

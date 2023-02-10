@@ -13,6 +13,8 @@ public interface CommunityTbRepositoryCustom {
     public void Increase_like(CommunityTb communityTb);
 
     public void updateCommunity(CommunityTb communityTb);
+
+    public List<CommunityTb> getCommunityByType(String type);
 }
 
 

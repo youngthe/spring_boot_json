@@ -79,5 +79,14 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
                 .execute();
     }
 
+    public List<CommunityTb> getCommunityByType(String type){
+        QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
+
+        return query
+                .selectFrom(qCommunityTb)
+                .where(qCommunityTb.type.eq(type))
+                .fetch();
+    }
+
 
 }

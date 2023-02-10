@@ -30,6 +30,9 @@ public class CommunityTb {
     @Column(name = "user_id")
     private int user_id;
 
+    @Column(name = "type")
+    private String type;
+
     @Column(name = "highlight")
     private boolean highlight;
 
@@ -107,5 +110,13 @@ public class CommunityTb {
 
     public void setGet_coin(double get_coin) {
         this.get_coin = get_coin;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
