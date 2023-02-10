@@ -116,7 +116,6 @@ public class CommunityContoller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "title", value = "제목", required = true),
             @ApiImplicitParam(name = "content", value = "본문", required = true),
-            @ApiImplicitParam(name = "upload", value = "이미지"),
             @ApiImplicitParam(name = "highlight", value = "글 하이라이트 여부", type = "boolean"),
             @ApiImplicitParam(name = "category", value = "카테고리", type ="varchar")
     })
@@ -125,31 +124,19 @@ public class CommunityContoller {
     })
     @RequestMapping(value = "/community", method = RequestMethod.POST)
     public HashMap community_save(@RequestHeader("token") String tokenHeader,
-                                  @RequestParam(value = "upload", required = false) MultipartFile file,
                                   @RequestParam("title") String title,
-                                  @RequestParam("content") String content, @RequestParam("highlight") boolean highlight,
+                                  @RequestParam("content") String content,
+                                  @RequestParam("highlight") boolean highlight,
                                   @RequestParam("category") String category)throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
         String filename = null;
 
+
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
-        }
-
-        if(file != null){
-            System.out.println("test");
-            long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
-            String[] filetotal = file.getOriginalFilename().split("\\.");
-            System.out.println(file.getOriginalFilename());
-            System.out.println(filetotal[1]);
-            filename = timestamp + "." + filetotal[filetotal.length-1];
-            String fullPath="C:\\project\\spring_boot_json\\src\\main\\resources\\static\\imgs\\" + filename;
-            log.info("파일 저장 {}", fullPath);
-            file.transferTo(new File(fullPath));
-
         }
 
         log.info("jwt : {} ", tokenHeader);
@@ -158,9 +145,19 @@ public class CommunityContoller {
 
         try{
             UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+            if(highlight){
+                if(user.getCoin() >= 1){
+                    user.setCoin(user.getCoin() - 1);
+                }else{
+                    result.put("message", "coin lack");
+                    result.put("resultCode", "false");
+                    return result;
+                }
+            }
+
             LocalDate now = LocalDate.now();
             CommunityTb communityTb = new CommunityTb();
-            communityTb.setFile_name(filename);
             communityTb.setTitle(title);
             communityTb.setContent(content);
             communityTb.setUser_id(user.getUser_id());

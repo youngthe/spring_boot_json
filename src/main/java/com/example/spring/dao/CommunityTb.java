@@ -14,12 +14,8 @@ public class CommunityTb {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "content")
+    @Column(name = "content", columnDefinition = "MEDIUMTEXT")
     private String content;
-
-    @Column(name = "file_name")
-    private String file_name;
-
 
     @Column(name = "date")
     private LocalDate date;
@@ -48,13 +44,6 @@ public class CommunityTb {
         this.user_id = user_id;
     }
 
-    public String getFile_name() {
-        return file_name;
-    }
-
-    public void setFile_name(String file_name) {
-        this.file_name = file_name;
-    }
 
     public int getHits() {
         return hits;
