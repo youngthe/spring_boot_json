@@ -1,11 +1,18 @@
 package com.example.spring;
 
 import com.example.spring.dao.AskingTb;
+import com.example.spring.dao.CommentTb;
+import com.example.spring.dao.CommunityTb;
+import com.example.spring.dao.TestContent;
 import com.example.spring.repository.AskingRepository;
+import com.example.spring.repository.CommunityRepository;
+import com.example.spring.repository.WithoutContent;
 import com.example.spring.utils.Calculator;
+import com.querydsl.core.Tuple;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -19,6 +26,11 @@ class ApplicationTests {
     @Autowired
     AskingRepository askingRepository;
 
+    @Autowired
+    CommunityRepository communityRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
     @Test
     void contextLoads() {
 
@@ -46,17 +58,8 @@ class ApplicationTests {
 
     @Test
     void test(){
-
-        List<AskingTb> askinglist = askingRepository.findAll();
-        System.out.println(askinglist);
-//        AskingTb askingTb = new AskingTb();
-//        //출금 요청 false, 입금 요청 true
-//        askingTb.setInput_output(false);
-//        askingTb.setCreated_date(LocalDate.now());
-//        askingTb.setStatus(true);
-//        askingTb.setUser_id(1);
-//        askingTb.setAmount(20);
-//        askingRepository.save(askingTb);
+        System.out.println(passwordEncoder.encode("test"));
+//        System.out.println(communityListByType);
     }
 
 }

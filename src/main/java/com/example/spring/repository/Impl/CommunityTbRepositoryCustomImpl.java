@@ -1,9 +1,12 @@
 package com.example.spring.repository.Impl;
 
+import com.example.spring.dao.TestContent;
+import com.example.spring.domain.QCommunityTbWithoutContent;
 import com.example.spring.domain.QUserTb;
 import com.example.spring.dao.CommunityTb;
 import com.example.spring.domain.QCommunityTb;
 import com.example.spring.repository.CommunityTbRepositoryCustom;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
@@ -27,20 +30,22 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
         QUserTb qusertb = QUserTb.user;
 
-        return query
+         return
+                 query
                 .selectFrom(qCommunityTb)
-                .orderBy(qCommunityTb.id.desc())
+                .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
     }
 
-    public List<CommunityTb> getCommunityBySearch(String title){
+    public List<Tuple> getCommunityBySearch(String title){
 
         QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
 
         return query
-                .selectFrom(qCommunityTb)
+                .select(qCommunityTb.community_id, qCommunityTb.title, qCommunityTb.hits,qCommunityTb.category, qCommunityTb.date,
+                        qCommunityTb.highlight, qCommunityTb.user_id, qCommunityTb.get_coin)
                 .where(qCommunityTb.title.startsWith(title))
-                .orderBy(qCommunityTb.id.desc())
+                .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
     }
 
@@ -51,7 +56,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
 
         return query
                 .selectFrom(qCommunityTb)
-                .where(qCommunityTb.id.eq(Community_id))
+                .where(qCommunityTb.community_id.eq(Community_id))
                 .fetchFirst();
 
     }
@@ -63,7 +68,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
 
         query.update(qCommunityTb)
-                .where(qCommunityTb.id.eq(communityTb.getCommunity_id()))
+                .where(qCommunityTb.community_id.eq(communityTb.getCommunity_id()))
                 .set(qCommunityTb.hits, communityTb.getHits()+1)
                 .execute();
     }
@@ -73,18 +78,18 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
     public void updateCommunity(CommunityTb communityTb) {
         QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
 
-        query.update(qCommunityTb).where(qCommunityTb.id.eq(communityTb.getCommunity_id()))
+        query.update(qCommunityTb).where(qCommunityTb.community_id.eq(communityTb.getCommunity_id()))
                 .set(qCommunityTb.title, communityTb.getTitle())
                 .set(qCommunityTb.content, communityTb.getContent())
                 .execute();
     }
 
-    public List<CommunityTb> getCommunityByType(String type){
-        QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
+    public List<TestContent> getCommunityByCategory(String category){
+        QCommunityTbWithoutContent qCommunityTb = QCommunityTbWithoutContent.CommunityTb;
 
         return query
                 .selectFrom(qCommunityTb)
-                .where(qCommunityTb.type.eq(type))
+                .where(qCommunityTb.category.eq(category))
                 .fetch();
     }
 

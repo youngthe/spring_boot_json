@@ -19,13 +19,15 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public static final QCommunityTb communityTb = new QCommunityTb("communityTb");
 
+    public final StringPath category = createString("category");
+
+    public final BooleanPath comment_allow = createBoolean("comment_allow");
+
     public final NumberPath<Integer> community_id = createNumber("community_id", Integer.class);
 
     public final StringPath content = createString("content");
 
     public final DatePath<java.time.LocalDate> date = createDate("date", java.time.LocalDate.class);
-
-    public final StringPath file_name = createString("file_name");
 
     public final NumberPath<Double> get_coin = createNumber("get_coin", Double.class);
 
@@ -34,8 +36,6 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
 
     public final StringPath title = createString("title");
-
-    public final StringPath type = createString("type");
 
     public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 

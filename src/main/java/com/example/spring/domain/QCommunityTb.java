@@ -11,12 +11,12 @@ import static com.querydsl.core.types.PathMetadataFactory.forVariable;
 public class QCommunityTb extends EntityPathBase<com.example.spring.dao.CommunityTb> {
     public static final QCommunityTb CommunityTb = new QCommunityTb("Community");
 //    public final StringPath id = createString("id");
-    public final NumberPath<Integer> id = createNumber("id", Integer.class);
+    public final NumberPath<Integer> community_id = createNumber("community_id", Integer.class);
     public final StringPath title = createString("title");
     public final StringPath content = createString("content");
-    public final StringPath writer = createString("writer");
+    public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
     public final StringPath date = createString("date");
-    public final StringPath type = createString("type");
+    public final StringPath category = createString("category");
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
     public final NumberPath<Double> get_coin =  createNumber("get_coin", double.class);
     public final BooleanPath highlight = createBoolean("highlight");

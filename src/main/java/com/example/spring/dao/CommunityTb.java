@@ -26,14 +26,17 @@ public class CommunityTb {
     @Column(name = "user_id")
     private int user_id;
 
-    @Column(name = "type")
-    private String type;
+    @Column(name = "category")
+    private String category;
 
     @Column(name = "highlight")
     private boolean highlight;
 
     @Column(name = "get_coin")
     private double get_coin;
+
+    @Column(name = "comment_allow")
+    private boolean comment_allow;
 
 
     public int getUser_id() {
@@ -101,11 +104,19 @@ public class CommunityTb {
         this.get_coin = get_coin;
     }
 
-    public String getType() {
-        return type;
+    public String getCategory() {
+        return category;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public boolean isComment_allow() {
+        return comment_allow;
+    }
+
+    public void setComment_allow(boolean comment_allow) {
+        this.comment_allow = comment_allow;
     }
 }
