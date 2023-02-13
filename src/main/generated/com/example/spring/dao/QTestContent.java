@@ -21,9 +21,11 @@ public class QTestContent extends EntityPathBase<TestContent> {
 
     public final StringPath category = createString("category");
 
+    public final BooleanPath comment_allow = createBoolean("comment_allow");
+
     public final NumberPath<Integer> community_id = createNumber("community_id", Integer.class);
 
-    public final DatePath<java.time.LocalDate> date = createDate("date", java.time.LocalDate.class);
+    public final DateTimePath<java.util.Date> date = createDateTime("date", java.util.Date.class);
 
     public final NumberPath<Double> get_coin = createNumber("get_coin", Double.class);
 

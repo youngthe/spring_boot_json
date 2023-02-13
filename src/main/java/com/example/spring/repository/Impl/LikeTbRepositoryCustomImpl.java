@@ -53,10 +53,21 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
                 .selectFrom(qLikeTb)
                 .where(qLikeTb.user_id.eq(likeTb.getUser_id()))
                 .where(qLikeTb.community_id.eq(likeTb.getCommunity_id()))
-                .fetchOne() == null){
-            return true;
-        }else{
+                .fetchFirst() == null){
             return false;
+        }else{
+            return true;
         }
     }
+
+    public int getLikeTotal(int community_id){
+        QLikeTb qLikeTb = QLikeTb.like;
+
+        return query
+                .selectFrom(qLikeTb)
+                .where(qLikeTb.community_id.eq(community_id))
+                .fetch().size();
+
+    }
+
 }

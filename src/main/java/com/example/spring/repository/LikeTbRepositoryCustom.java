@@ -9,4 +9,6 @@ public interface LikeTbRepositoryCustom {
 
     public boolean LikeCheck(LikeTb likeTb);
 
+    public int getLikeTotal(int community_id);
+
 }

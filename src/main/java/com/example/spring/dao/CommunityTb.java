@@ -2,6 +2,7 @@ package com.example.spring.dao;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Entity
 @Table(name = "community")
@@ -18,7 +19,7 @@ public class CommunityTb {
     private String content;
 
     @Column(name = "date")
-    private LocalDate date;
+    private Date date;
 
     @Column(name = "hits")
     private int hits;
@@ -56,11 +57,11 @@ public class CommunityTb {
         this.hits = hits;
     }
 
-    public LocalDate getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

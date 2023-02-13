@@ -1,8 +1,11 @@
 package com.example.spring.controller;
 
 import com.example.spring.dao.*;
+import com.example.spring.dto.CommunityWriterDto;
+import com.example.spring.dto.CommunityWriterDtoWithoutContent;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
+import com.querydsl.core.Tuple;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -53,36 +56,19 @@ public class CommunityContoller {
             @ApiResponse(responseCode = "200", description = "resultCode, community")
     })
     @RequestMapping(value = "/community", method = RequestMethod.GET)
-    public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+    public HashMap community(@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage, @RequestParam ("category") String category, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if(ObjectUtils.isEmpty(data.get("nowpage"))){
-            result.put("message", "nowpage is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-        if(ObjectUtils.isEmpty(data.get("count"))){
-            result.put("message", "count is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-        if(ObjectUtils.isEmpty(data.get("category"))){
-            result.put("message", "category is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-
-        int nowpage = Integer.parseInt(data.get("nowpage").toString());
-        int countpage = Integer.parseInt(data.get("count").toString());
-        String category = data.get("category").toString();
-
         int start = countpage * nowpage;
-        int end = (countpage* + 1) - 1;
+        int end = countpage*(nowpage+1) - 1;
 
         log.info("start : {}", start);
         log.info("end : {}", end);
+        log.info("nowpage : {}", nowpage);
+        log.info("countpage : {}", countpage);
+        log.info("category : {}", category);
+
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
@@ -91,36 +77,25 @@ public class CommunityContoller {
         }
 
         try{
-            List<CommunityTb> communityTbList  =  communityRepository.getCommunity();
+
             List<TestContent> communityTbListByCategory  =  communityRepository.getCommunityByCategory(category);
 
-            System.out.println("size : " + communityTbList.size());
+            System.out.println("size : " + communityTbListByCategory.size());
 
-            List<CategoryTb> categoryTb = categoryRepository.findAll();
-
-            HashMap test = new HashMap();
-            for(int i=0;i<categoryTb.size();i++){
-
-                int category_size = 0;
-                for(int j=0;j<communityTbList.size();j++){
-                    if(communityTbList.get(j).getCategory().equals(categoryTb.get(i).getCategory_name())){
-                        category_size++;
-                    }
-                }
-                test.put("total", communityTbList.size());
-                test.put(categoryTb.get(i).getCategory_name(), category_size);
-            }
+            System.out.println(communityTbListByCategory);
 
             if(end>=communityTbListByCategory.size()) end = communityTbListByCategory.size()-1;
-            List<TestContent> communityTbListByorder = new ArrayList<>();
-
+            List<CommunityWriterDtoWithoutContent> communityTbListByorder = new ArrayList<>();
             for(int i=start;i<=end;i++){
-                communityTbListByorder.add(communityTbListByCategory.get(i));
+                CommunityWriterDtoWithoutContent communityWriterDto = new CommunityWriterDtoWithoutContent(communityTbListByCategory.get(i), userRepository.getNameByPk(communityTbListByCategory.get(i).getUser_id()));
+                communityTbListByorder.add(communityWriterDto);
             }
-            result.put("count_list", test);
+
+            result.put("total", communityTbListByCategory.size());
             result.put("community", communityTbListByorder);
             result.put("resultCode", "true");
             return result;
+
         }catch (Exception e){
             log.info("{}", e);
             log.info("/community error");
@@ -185,6 +160,7 @@ public class CommunityContoller {
         String category = data.get("category").toString();
         boolean comment_allow = (boolean) data.get("comment_allow");
 
+
         log.info("jwt : {} ", tokenHeader);
         log.info("title {} ", title);
         log.info("content {} ", content);
@@ -202,7 +178,7 @@ public class CommunityContoller {
                 }
             }
 
-            LocalDate now = LocalDate.now();
+            Date now = new Date();
             CommunityTb communityTb = new CommunityTb();
             communityTb.setTitle(title);
             communityTb.setContent(content);
@@ -242,13 +218,24 @@ public class CommunityContoller {
         }
 
         try{
-
             CommunityTb community = communityRepository.getCommunityById(community_id);
-            List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
 
-            communityRepository.Increase_like(community);
-            result.put("community", community);
-            result.put("comment", commentTbList);
+            UserTb user = userRepository.getUserTbByUserId(community.getUser_id());
+
+            LikeTb like = new LikeTb();
+            like.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            like.setCommunity_id(community_id);
+            boolean likeResult = likeRepository.LikeCheck(like);
+
+            System.out.println(likeRepository.LikeCheck(like));
+
+            List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
+            likeRepository.getLikeTotal(community_id);
+            int comment_total = commentTbList.size();
+            CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, user.getName(), likeResult, likeRepository.getLikeTotal(community_id), comment_total);
+
+            result.put("community", communityWriterDto);
+            result.put("comment", commentTbList );
             result.put("resultCode", "true");
             return result;
 
@@ -426,14 +413,14 @@ public class CommunityContoller {
 
         if(likeRepository.LikeCheck(likeTb)){
 
-            likeRepository.save(likeTb);
-            result.put("message", "pushed");
-            result.put("resultCode", "true");
-
-        }else{
             LikeTb heart = likeRepository.getLike(likeTb);
             likeRepository.delete(heart);
             result.put("message", "unpushed");
+            result.put("resultCode", "true");
+
+        }else{
+            likeRepository.save(likeTb);
+            result.put("message", "pushed");
             result.put("resultCode", "true");
         }
         return result;

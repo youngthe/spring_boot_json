@@ -32,7 +32,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
 
          return
                  query
-                .selectFrom(qCommunityTb)
+                .select(qCommunityTb)
                 .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
     }

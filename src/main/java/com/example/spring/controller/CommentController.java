@@ -17,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashMap;
 
 @RestController
@@ -104,7 +105,7 @@ public class CommentController {
         log.info("comment : {}", comment);
 
         try{
-            String now = LocalDate.now().toString();
+            Date now = new Date();
             CommentTb commentTb = new CommentTb();
             commentTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
             commentTb.setCommunity_id(community_id);
@@ -154,7 +155,7 @@ public class CommentController {
         log.info("jwt : {}", tokenHeader);
         log.info("comment : {}", comment);
 
-        String now = LocalDate.now().toString();
+        Date now = new Date();
 
         try{
             int communityId = commentRepository.getCommunityIdByCommentId(comment_id);

@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class TestContent {
 
 
     @Column(name = "date")
-    private LocalDate date;
+    private Date date;
 
     @Column(name = "hits")
     private int hits;
@@ -37,4 +38,7 @@ public class TestContent {
 
     @Column(name = "get_coin")
     private double get_coin;
+
+    @Column(name = "comment_allow")
+    private boolean comment_allow;
 }

@@ -8,6 +8,7 @@ import org.hibernate.annotations.Comment;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -25,7 +26,7 @@ public class CommentTb {
     private String comment;
 
     @Column(name = "date")
-    private String date;
+    private Date date;
 
     @Column(name = "parent")
     private int parent;
@@ -57,11 +58,11 @@ public class CommentTb {
         this.comment = comment;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
     public int getComment_id() {

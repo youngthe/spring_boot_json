@@ -27,7 +27,7 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public final StringPath content = createString("content");
 
-    public final DatePath<java.time.LocalDate> date = createDate("date", java.time.LocalDate.class);
+    public final DateTimePath<java.util.Date> date = createDateTime("date", java.util.Date.class);
 
     public final NumberPath<Double> get_coin = createNumber("get_coin", Double.class);
 

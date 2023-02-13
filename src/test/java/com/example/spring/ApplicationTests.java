@@ -58,8 +58,11 @@ class ApplicationTests {
 
     @Test
     void test(){
-        System.out.println(passwordEncoder.encode("test"));
-//        System.out.println(communityListByType);
+//        LocalDate now = LocalDate.now();
+
+        Date now = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        System.out.println(format.format(now));
     }
 
 }
