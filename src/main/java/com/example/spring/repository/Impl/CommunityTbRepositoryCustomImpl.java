@@ -94,4 +94,13 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
     }
 
 
+    public TestContent getCommunBylast(){
+        QCommunityTbWithoutContent qCommunityTb = QCommunityTbWithoutContent.CommunityTb;
+
+        return query
+                .selectFrom(qCommunityTb)
+                .orderBy(qCommunityTb.community_id.desc())
+                .fetchFirst();
+    }
+
 }

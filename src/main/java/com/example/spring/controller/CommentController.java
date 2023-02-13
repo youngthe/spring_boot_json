@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -74,7 +75,6 @@ public class CommentController {
 
     @ApiOperation(value = "댓글 작성", notes = "게시글에 댓글 작성")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "community_id", value = "게시글 id", required = true),
             @ApiImplicitParam(name = "comment", value = "댓글 내용", required = true),
     })
     @ApiResponses(value = {
@@ -83,8 +83,17 @@ public class CommentController {
     @RequestMapping(value = "/comments/{community_id}", method = RequestMethod.POST)
     public HashMap comment_write(@PathVariable ("community_id") int community_id, @RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
-        String comment = data.get("comment").toString();
+
+
         HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("comment"))){
+            result.put("message", "comment is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String comment = data.get("comment").toString();
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
@@ -124,9 +133,17 @@ public class CommentController {
     @RequestMapping(value = "/recomments/{comment_id}", method = RequestMethod.POST)
     public HashMap recomment_write(@PathVariable ("comment_id") int comment_id, @RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
-        String comment = data.get("comment").toString();
 
         HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("comment"))){
+            result.put("message", "comment is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String comment = data.get("comment").toString();
+
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
@@ -172,6 +189,12 @@ public class CommentController {
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("comment"))){
+            result.put("message", "comment is null");
             result.put("resultCode", "false");
             return result;
         }

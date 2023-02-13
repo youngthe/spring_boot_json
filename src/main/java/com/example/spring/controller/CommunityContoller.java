@@ -3,7 +3,6 @@ package com.example.spring.controller;
 import com.example.spring.dao.*;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
-import com.querydsl.core.Tuple;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -12,7 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -41,6 +40,7 @@ public class CommunityContoller {
     private CategoryRepository categoryRepository;
 
 
+
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     @ApiOperation(value = "게시판", notes = "게시글을 보여주는 게시판 페이지")
@@ -56,12 +56,30 @@ public class CommunityContoller {
     public HashMap community(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("nowpage"))){
+            result.put("message", "nowpage is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("count"))){
+            result.put("message", "count is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("category"))){
+            result.put("message", "category is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
         int nowpage = Integer.parseInt(data.get("nowpage").toString());
         int countpage = Integer.parseInt(data.get("count").toString());
         String category = data.get("category").toString();
 
-        int start = countpage*nowpage;
-        int end = countpage*(nowpage+1) - 1;
+        int start = countpage * nowpage;
+        int end = (countpage* + 1) - 1;
 
         log.info("start : {}", start);
         log.info("end : {}", end);
@@ -127,14 +145,40 @@ public class CommunityContoller {
     public HashMap community_save(@RequestHeader("token") String tokenHeader, @RequestBody HashMap<String,Object> data) throws IOException{
 
         HashMap<String, Object> result = new HashMap<>();
-        String filename = null;
-
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
+
+        if(ObjectUtils.isEmpty(data.get("title"))){
+            result.put("message", "title is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("content"))){
+            result.put("message", "content is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("highlight"))){
+            result.put("message", "highlight is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("category"))){
+            result.put("message", "category is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("comment_allow"))){
+            result.put("message", "comment_allow is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
         String title = data.get("title").toString();
         String content = data.get("content").toString();
         boolean highlight = (boolean) data.get("highlight");
@@ -169,6 +213,7 @@ public class CommunityContoller {
             communityTb.setComment_allow(comment_allow);
             communityRepository.save(communityTb);
 
+            result.put("pk", communityRepository.getCommunBylast().getCommunity_id());
             result.put("resultCode", "true");
             return result;
         }catch (Exception e){
@@ -188,6 +233,7 @@ public class CommunityContoller {
     public HashMap community_detail(@PathVariable("community_id") int community_id , @RequestHeader("token") String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
+
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
@@ -230,6 +276,7 @@ public class CommunityContoller {
             result.put("resultCode", "false");
             return result;
         }
+
         try{
             UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
 
@@ -273,6 +320,39 @@ public class CommunityContoller {
     public HashMap community_modify(@PathVariable ("community_id") int community_id,@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) throws IOException {
 
         HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("title"))){
+            result.put("message", "title is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("content"))){
+            result.put("message", "content is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("highlight"))){
+            result.put("message", "highlight is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("category"))){
+            result.put("message", "category is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("comment_allow"))){
+            result.put("message", "comment_allow is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         String title = data.get("title").toString();
         String content = data.get("content").toString();
         boolean highlight = (boolean) data.get("highlight");
@@ -281,11 +361,7 @@ public class CommunityContoller {
         log.info("title : {}", title);
         log.info("content : {}", content);
 
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
+
         try{
             CommunityTb communityTb = communityRepository.getCommunityById(community_id);
             int user_id = jwtTokenProvider.getUserId(tokenHeader);
@@ -381,6 +457,11 @@ public class CommunityContoller {
             result.put("resultCode", "false");
             return result;
         }
+        if(ObjectUtils.isEmpty(data.get("coin"))){
+            result.put("message", "coin is null");
+            result.put("resultCode", "false");
+            return result;
+        }
 
         double coin = (double) data.get("coin");
         //사용자가 후원할 코인이 있는지 확인해야함
@@ -449,10 +530,6 @@ public class CommunityContoller {
                 result.put("message", "1 coin lack");
                 result.put("resultCode", "false");
             }
-
-
-
-
 
             return result;
 

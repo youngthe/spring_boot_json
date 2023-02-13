@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -63,6 +64,17 @@ public class HomeController {
     public HashMap loginCheck(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("account"))){
+            result.put("message", "account is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("pw"))){
+            result.put("message", "pw is null");
+            result.put("resultCode", "false");
+            return result;
+        }
         String account = data.get("account").toString();
         String pw = data.get("pw").toString();
 
@@ -99,6 +111,22 @@ public class HomeController {
     public HashMap Register(@RequestBody HashMap<String, Object> data){
 
         HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("account"))){
+            result.put("message", "account is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("pw"))){
+            result.put("message", "pw is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("nickname"))){
+            result.put("message", "nickname is null");
+            result.put("resultCode", "false");
+            return result;
+        }
 
         String account = data.get("account").toString();
         String pw = data.get("pw").toString();

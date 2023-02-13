@@ -17,6 +17,8 @@ public interface CommunityTbRepositoryCustom {
     public void updateCommunity(CommunityTb communityTb);
 
     public List<TestContent> getCommunityByCategory(String category);
+
+    public TestContent getCommunBylast();
 }
 
 

@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -65,6 +66,12 @@ public class WalletController {
             return result;
         }
 
+        if(ObjectUtils.isEmpty(data.get("address"))){
+            result.put("message", "address is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         String address = data.get("address").toString();
 
         try {
@@ -89,13 +96,12 @@ public class WalletController {
     @ApiOperation(value = "지갑 수정", notes = "지갑 주소 수정하기")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "address", value = "지갑 주소", required = true),
-            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/wallet", method = RequestMethod.PATCH)
-    public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+    @RequestMapping(value = "/wallet/{wallet_id}", method = RequestMethod.PATCH)
+    public HashMap wallet_modify(@RequestBody HashMap<String, Object> data, @PathVariable ("wallet_id") int wallet_id, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
         
@@ -104,9 +110,13 @@ public class WalletController {
             result.put("resultCode", "false");
             return result;
         }
+        if(ObjectUtils.isEmpty(data.get("address"))){
+            result.put("message", "address is null");
+            result.put("resultCode", "false");
+            return result;
+        }
 
         String wallet_address = data.get("address").toString();
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
 
         try {
             WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
@@ -130,6 +140,7 @@ public class WalletController {
     @ApiOperation(value = "스테이킹 추가", notes = "코인으로 스테이킹 등록")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "coin", value = "스테이킹할 코인 갯수", required = true),
+            @ApiImplicitParam(name = "name", value = "스테이킹 이름", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
@@ -141,6 +152,17 @@ public class WalletController {
 
         if (!jwtTokenProvider.validateToken(tokenHeader)) {
             result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("coin"))){
+            result.put("message", "coin is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("name"))){
+            result.put("message", "name is null");
             result.put("resultCode", "false");
             return result;
         }
@@ -191,7 +213,6 @@ public class WalletController {
 
     @ApiOperation(value = "스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "staking_id", value = "스테이킹 id", required = true),
             @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
     })
     @ApiResponses(value = {
@@ -204,6 +225,17 @@ public class WalletController {
 
         if (!jwtTokenProvider.validateToken(tokenHeader)) {
             result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("staking_id"))){
+            result.put("message", "staking_id is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("wallet_id"))){
+            result.put("message", "wallet_id is null");
             result.put("resultCode", "false");
             return result;
         }
@@ -240,9 +272,6 @@ public class WalletController {
     @RequestMapping(value = "/wallet/order", method = RequestMethod.POST)
     public HashMap asking_input(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
-        String tx = data.get("tx").toString();
-        double amount = Double.parseDouble(data.get("value").toString());
-
         HashMap<String, Object> result = new HashMap<>();
 
         if (!jwtTokenProvider.validateToken(tokenHeader)) {
@@ -250,6 +279,29 @@ public class WalletController {
             result.put("resultCode", "false");
             return result;
         }
+
+        if(ObjectUtils.isEmpty(data.get("tx"))){
+            result.put("message", "tx is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("value"))){
+            result.put("message", "value is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String tx = data.get("tx").toString();
+        double amount = Double.parseDouble(data.get("value").toString());
+
+
+        if(ObjectUtils.isEmpty(data.get("wallet_id"))){
+            result.put("message", "wallet_id is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
 
         try{
             AskingTb askingTb = new AskingTb();
@@ -284,6 +336,18 @@ public class WalletController {
 
         if (!jwtTokenProvider.validateToken(tokenHeader)) {
             result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("amount"))){
+            result.put("message", "amount is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("wallet_id"))){
+            result.put("message", "wallet_id is null");
             result.put("resultCode", "false");
             return result;
         }
