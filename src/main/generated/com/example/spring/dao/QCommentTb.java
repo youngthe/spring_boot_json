@@ -25,7 +25,7 @@ public class QCommentTb extends EntityPathBase<CommentTb> {
 
     public final NumberPath<Integer> community_id = createNumber("community_id", Integer.class);
 
-    public final StringPath date = createString("date");
+    public final DateTimePath<java.util.Date> date = createDateTime("date", java.util.Date.class);
 
     public final NumberPath<Integer> parent = createNumber("parent", Integer.class);
 

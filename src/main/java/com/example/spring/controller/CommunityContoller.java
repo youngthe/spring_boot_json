@@ -1,8 +1,10 @@
 package com.example.spring.controller;
 
 import com.example.spring.dao.*;
+import com.example.spring.dto.CommentWriterDto;
 import com.example.spring.dto.CommunityWriterDto;
 import com.example.spring.dto.CommunityWriterDtoWithoutContent;
+import com.example.spring.dto.RecommentDto;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import com.querydsl.core.Tuple;
@@ -41,6 +43,9 @@ public class CommunityContoller {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private CommentlikeRepository commentlikeRepository;
 
 
 
@@ -230,12 +235,64 @@ public class CommunityContoller {
             System.out.println(likeRepository.LikeCheck(like));
 
             List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
-            likeRepository.getLikeTotal(community_id);
+            List<CommentWriterDto> commentWriterDto_list = new ArrayList<>();
+
+
+            String name, recomment_name;
+            boolean my_like, recomment_like;
+            int like_total, recomment_like_total;
+
+            System.out.println("commentTbList Size : " + commentTbList.size());
+            for(int i=0;i<commentTbList.size();i++){
+//                CommunityWriterDtoWithoutContent communityWriterDto = new CommunityWriterDtoWithoutContent(communityTbListByCategory.get(i), userRepository.getNameByPk(communityTbListByCategory.get(i).getUser_id()));
+                name = userRepository.getUserTbByUserId(commentTbList.get(i).getUser_id()).getName();
+                like_total = commentlikeRepository.getCommentLike_total(commentTbList.get(i).getComment_id());
+
+                CommentLikeTb commentLikeTb = new CommentLikeTb();
+                commentLikeTb.setComment_id(commentTbList.get(i).getComment_id());
+                commentLikeTb.setCommunity_id(community_id);
+                commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+
+
+                my_like = commentlikeRepository.CommentLikeCheck(commentLikeTb);
+
+                List<CommentTb> reply = commentRepository.getRecommentByCommentId(commentTbList.get(i).getComment_id());
+                List<RecommentDto> recommentWriterDto_list = new ArrayList<>();
+                System.out.println("reply Size : " + reply.size());
+
+                for(int j=0;j<reply.size();j++){
+
+                    CommentLikeTb recommentLikeTb = new CommentLikeTb();
+                    recommentLikeTb.setComment_id(reply.get(j).getComment_id());
+                    recommentLikeTb.setCommunity_id(community_id);
+                    recommentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+
+                    recomment_name = userRepository.getUserTbByUserId(reply.get(j).getUser_id()).getName();
+                    recomment_like = commentlikeRepository.CommentLikeCheck(recommentLikeTb);
+                    recomment_like_total = commentlikeRepository.getCommentLike_total(reply.get(j).getComment_id());
+                    RecommentDto recommentDto = new RecommentDto(reply.get(j), recomment_name, recomment_like, recomment_like_total);
+                    recommentWriterDto_list.add(recommentDto);
+                }
+                CommentWriterDto commentWriterDto = new CommentWriterDto(commentTbList.get(i), name, my_like, like_total, recommentWriterDto_list);
+                System.out.println("test : " + my_like);
+                commentWriterDto_list.add(commentWriterDto);
+            }
+
+            communityRepository.Increase_like(community);
+
+            CommentLikeTb commentLikeTb = new CommentLikeTb();
+            commentLikeTb.setCommunity_id(community_id);
+            commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+
+
+
+            int get_likeTotal = likeRepository.getLikeTotal(community_id);
             int comment_total = commentTbList.size();
-            CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, user.getName(), likeResult, likeRepository.getLikeTotal(community_id), comment_total);
+            double total_reward = community.getHits() + community.getGet_coin() + get_likeTotal;
+            CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, user.getName(), likeResult, get_likeTotal, comment_total, total_reward);
 
             result.put("community", communityWriterDto);
-            result.put("comment", commentTbList );
+            result.put("comment", commentWriterDto_list);
             result.put("resultCode", "true");
             return result;
 

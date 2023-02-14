@@ -1,7 +1,10 @@
 package com.example.spring.controller;
 
+import com.example.spring.dao.CommentLikeTb;
 import com.example.spring.dao.CommentTb;
+import com.example.spring.dao.LikeTb;
 import com.example.spring.repository.CommentRepository;
+import com.example.spring.repository.CommentlikeRepository;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -28,6 +31,9 @@ public class CommentController {
 
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    private CommentlikeRepository commentlikeRepository;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
@@ -220,4 +226,55 @@ public class CommentController {
 
         return result;
     }
+
+    @ApiOperation(value = "댓글 좋아요", notes = "한번 누르면 좋아요 버튼 두번 누르면 좋아요 해제")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "community_id", value = "커뮤니티 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/comments/{comment_id}", method = RequestMethod.PUT)
+    public HashMap comment_like(@PathVariable("comment_id") int comment_id, @RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("community_id"))){
+            result.put("message", "community_id is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int community_id = Integer.parseInt(data.get("community_id").toString());
+
+        CommentLikeTb commentLikeTb = new CommentLikeTb();
+        commentLikeTb.setComment_id(comment_id);
+        commentLikeTb.setCommunity_id(community_id);
+        commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+
+
+        if(commentlikeRepository.CommentLikeCheck(commentLikeTb)){
+
+            CommentLikeTb heart = commentlikeRepository.getCommentLike(commentLikeTb);
+            commentlikeRepository.delete(heart);
+
+            result.put("message", "unpushed");
+            result.put("resultCode", "true");
+
+        }else{
+            commentlikeRepository.save(commentLikeTb);
+            result.put("message", "pushed");
+            result.put("resultCode", "true");
+        }
+        return result;
+
+
+    }
+
 }

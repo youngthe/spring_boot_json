@@ -42,13 +42,13 @@ public class CommunityWriterDto {
     int comment_total;
 
     int like_total;
-    public CommunityWriterDto(CommunityTb communityTb, String name, boolean likeResult, int like_total, int comment_total) {
+
+    double total_reward;
+    public CommunityWriterDto(CommunityTb communityTb, String name, boolean likeResult, int like_total, int comment_total, double total_reward) {
         this.community_id = communityTb.getCommunity_id();
         this.title = communityTb.getTitle();
         this.content = communityTb.getContent();
-//        this.date = communityTb.getDate();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-//        System.out.println();
         this.hits = communityTb.getHits();
         this.date = format.format(communityTb.getDate());
         this.user_id = communityTb.getUser_id();
@@ -60,6 +60,7 @@ public class CommunityWriterDto {
         this.like = likeResult;
         this.like_total = like_total;
         this.comment_total = comment_total;
+        this.total_reward = total_reward;
     }
 
     public CommunityWriterDto() {

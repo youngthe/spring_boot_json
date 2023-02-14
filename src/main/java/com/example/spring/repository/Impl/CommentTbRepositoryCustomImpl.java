@@ -29,10 +29,33 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
         return query
                 .selectFrom(qCommentTb)
                 .where(qCommentTb.community_id.eq(Community_id))
-                .orderBy(qCommentTb.parent.asc())
+                .where(qCommentTb.parent.eq(0))
                 .fetch();
 
     }
+
+    public int getCommentListSize(int Community_id){
+
+        QCommentTb qCommentTb = QCommentTb.comments;
+
+        return query
+                .selectFrom(qCommentTb)
+                .where(qCommentTb.community_id.eq(Community_id))
+                .fetch().size();
+
+    }
+
+    public List<CommentTb> getRecommentByCommentId(int parent){
+
+        QCommentTb qCommentTb = QCommentTb.comments;
+
+        return query
+                .selectFrom(qCommentTb)
+                .where(qCommentTb.parent.eq(parent))
+                .fetch();
+
+    }
+
 
     public CommentTb getCommentByCommentId(int commentId){
         QCommentTb qCommentTb = QCommentTb.comments;

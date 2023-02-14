@@ -21,4 +21,6 @@ public interface CommentTbRepositoryCustom {
 
     public void deleteByParent(int parent_id);
 
+    public List<CommentTb> getRecommentByCommentId(int comment_id);
+
 }
