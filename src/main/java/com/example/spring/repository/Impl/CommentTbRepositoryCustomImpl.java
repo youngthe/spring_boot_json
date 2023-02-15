@@ -34,6 +34,9 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
     }
 
+
+
+
     public int getCommentListSize(int Community_id){
 
         QCommentTb qCommentTb = QCommentTb.comments;
@@ -121,13 +124,25 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
         return query.selectFrom(qCommentTb).where(qCommentTb.community_id.eq(community_id)).fetch();
     }
 
-//    public List<CommentTb> getChildCommentByParentComment(int commentId){
-//        QCommentTb qCommentTb = QCommentTb.comments;
-//
-//        return query
-//                .selectFrom(qCommentTb)
-////                .where(qCommentTb.)
-//                .fetch();
-//    }
+    public List<CommentTb> getCommentByUserId(int user_id){
+        QCommentTb qCommentTb = QCommentTb.comments;
 
+        return query
+                .selectFrom(qCommentTb)
+                .where(qCommentTb.user_id.eq(user_id))
+                .orderBy(qCommentTb.id.desc())
+                .fetch();
+    }
+
+    public List<CommentTb> getCommentListDistinct(int user_id){
+
+        QCommentTb qCommentTb = QCommentTb.comments;
+
+        return query
+                .selectFrom(qCommentTb)
+                .where(qCommentTb.user_id.eq(user_id))
+                .groupBy(qCommentTb.community_id)
+                .fetch();
+
+    }
 }

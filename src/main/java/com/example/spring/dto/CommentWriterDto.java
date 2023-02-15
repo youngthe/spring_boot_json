@@ -34,6 +34,10 @@ public class CommentWriterDto {
     private boolean add_reply = false;
 
     private String add_comment = "";
+
+    private boolean edit = false;
+
+    private String edit_comment;
     List<RecommentDto> reply;
 
 
@@ -49,5 +53,6 @@ public class CommentWriterDto {
         this.like = like;
         this.like_total = like_total;
         this.reply = reply;
+        this.edit_comment = comment.getComment();
     }
 }

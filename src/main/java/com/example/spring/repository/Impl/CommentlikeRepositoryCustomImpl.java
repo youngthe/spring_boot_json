@@ -22,7 +22,7 @@ public class CommentlikeRepositoryCustomImpl extends QuerydslRepositorySupport i
     }
 
 
-    public boolean CommentLikeCheck(CommentLikeTb commentLikeTb){
+    public boolean CommentLikeCheckByAll(CommentLikeTb commentLikeTb){
 
         QCommentLikeTb qCommentLikeTb = QCommentLikeTb.qCommentLikeTb;
 

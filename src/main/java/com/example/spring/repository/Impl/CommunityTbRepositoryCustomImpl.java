@@ -1,5 +1,6 @@
 package com.example.spring.repository.Impl;
 
+import com.example.spring.dao.CommentTb;
 import com.example.spring.dao.TestContent;
 import com.example.spring.domain.QCommunityTbWithoutContent;
 import com.example.spring.domain.QUserTb;
@@ -90,6 +91,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         return query
                 .selectFrom(qCommunityTb)
                 .where(qCommunityTb.category.eq(category))
+                .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
     }
 
@@ -101,6 +103,30 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
                 .selectFrom(qCommunityTb)
                 .orderBy(qCommunityTb.community_id.desc())
                 .fetchFirst();
+    }
+
+    public List<TestContent> getCommunityByUserId(int user_id){
+
+        QCommunityTbWithoutContent qCommunityTb = QCommunityTbWithoutContent.CommunityTb;
+
+        return query
+                .selectFrom(qCommunityTb)
+                .where(qCommunityTb.user_id.eq(user_id))
+                .orderBy(qCommunityTb.community_id.desc())
+                .fetch();
+
+    }
+
+    public List<CommunityTb> getCommunityListByUserId(int user_id){
+
+        QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
+
+        return query
+                .selectFrom(qCommunityTb)
+                .where(qCommunityTb.user_id.eq(user_id))
+                .orderBy(qCommunityTb.community_id.desc())
+                .fetch();
+
     }
 
 }

@@ -28,6 +28,10 @@ public class RecommentDto {
 
     private int like_total;
 
+    private boolean edit = false;
+
+    private String edit_comment;
+
     public RecommentDto(CommentTb comment, String name, boolean like, int like_total) {
         this.comment_id = comment.getComment_id();
         this.community_id = (int) comment.getCommunity_id();
@@ -39,5 +43,6 @@ public class RecommentDto {
         this.name = name;
         this.like = like;
         this.like_total = like_total;
+        this.edit_comment = comment.getComment();
     }
 }

@@ -63,7 +63,4 @@ public class CommunityWriterDto {
         this.total_reward = total_reward;
     }
 
-    public CommunityWriterDto() {
-
-    }
 }

@@ -6,7 +6,7 @@ import com.example.spring.dao.CommentTb;
 import java.util.List;
 
 public interface CommentlikeRepositoryCustom {
-    public boolean CommentLikeCheck(CommentLikeTb commentLikeTb);
+    public boolean CommentLikeCheckByAll(CommentLikeTb commentLikeTb);
 
     public CommentLikeTb getCommentLike(CommentLikeTb commentLikeTb);
 

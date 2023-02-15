@@ -27,6 +27,8 @@ public class QUserTb extends EntityPathBase<UserTb> {
 
     public final StringPath pw = createString("pw");
 
+    public final StringPath role = createString("role");
+
     public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 
     public QUserTb(String variable) {

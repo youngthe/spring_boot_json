@@ -32,12 +32,15 @@ public class CommunityWriterDtoWithoutContent {
 
     String name;
 
-    public CommunityWriterDtoWithoutContent(TestContent communityTb, String name) {
+    int like_total;
+
+    double total_reward;
+
+    public CommunityWriterDtoWithoutContent(TestContent communityTb, String name, int like_total, double total_reward) {
         this.community_id = communityTb.getCommunity_id();
         this.title = communityTb.getTitle();
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-//        System.out.println(format.format(communityTb.getDate()));
         this.date = format.format(communityTb.getDate());
         this.hits = communityTb.getHits();
         this.user_id = communityTb.getUser_id();
@@ -46,6 +49,8 @@ public class CommunityWriterDtoWithoutContent {
         this.get_coin = communityTb.getGet_coin();
         this.comment_allow = communityTb.isComment_allow();
         this.name = name;
+        this.total_reward = total_reward;
+        this.like_total = like_total;
     }
 
     public CommunityWriterDtoWithoutContent() {

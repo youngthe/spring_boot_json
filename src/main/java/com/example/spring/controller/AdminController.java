@@ -11,8 +11,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +32,9 @@ public class AdminController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @ApiOperation(value = "관리자 페이지", notes = "admin 계정만 관리자 페이지 접근 가능, 입출금 요청 승인 확인")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode, askinglist")
@@ -39,18 +45,80 @@ public class AdminController {
         HashMap<String,Object> result = new HashMap<>();
         UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
 
-
-        if(jwtTokenProvider.validateToken(tokenHeader) && Objects.equals(usertb.getAccount(), "admin")){
-            List<AskingTb> askinglist = askingRepository.findAll();
-            result.put("askinglist", askinglist);
-            return result;
-        }else{
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
+        if(Objects.equals(usertb.getRole(), "admin")){
+            List<AskingTb> askinglist = askingRepository.findAll();
+            result.put("askinglist", askinglist);
+            return result;
+        }else{
+            result.put("message", "not admin");
+            result.put("resultCode", "false");
+            return result;
+        }
+
     }
+
+    @ApiOperation(value = "관리자 회원가입", notes = "아이디 비밀번호 별명을 통한 회원가입")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "account", value = "아이디", required = true),
+            @ApiImplicitParam(name = "pw", value = "비밀번호", required = true),
+            @ApiImplicitParam(name = "nickname", value = "별명", required = true)
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/admin/register", method = RequestMethod.POST)
+    public HashMap Register(@RequestBody HashMap<String, Object> data){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("account"))){
+            result.put("message", "account is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("pw"))){
+            result.put("message", "pw is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+        if(ObjectUtils.isEmpty(data.get("nickname"))){
+            result.put("message", "nickname is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String account = data.get("account").toString();
+        String pw = data.get("pw").toString();
+        String name = data.get("nickname").toString();
+
+
+        if(userRepository.AccountCheck(account)) {
+            try{
+                UserTb userTb = new UserTb();
+                userTb.setAccount(account);
+                userTb.setPw(passwordEncoder.encode(pw));
+                userTb.setName(name);
+                userTb.setRole("admin");
+                userRepository.save(userTb);
+                result.put("resultCode", "true");
+                return result;
+            }catch(Exception e){
+                result.put("resultCode", "false");
+                return result;
+            }
+        }else{
+            result.put("message", "already");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
 
     @ApiOperation(value = "요청 승인", notes = "입금 출금 요청 승인 확인, +  요청 승인은 어떻게 처리해야하나")
     @ApiResponses(value = {
@@ -63,7 +131,14 @@ public class AdminController {
         UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
 
 
-        if(jwtTokenProvider.validateToken(tokenHeader) && Objects.equals(usertb.getAccount(), "admin")){
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
+        if(Objects.equals(usertb.getRole(), "admin")){
 
             //상태를 승인 확인으로 변경
             AskingTb askingTb = askingRepository.getAskingTbByAskingId(asking_id);
@@ -78,8 +153,10 @@ public class AdminController {
 
             }else{
                 //사용자 지갑으로 출금
-                usertb.setCoin(usertb.getCoin() - askingTb.getAmount());
-
+                BigDecimal bigNumber1 = BigDecimal.valueOf(usertb.getCoin());
+                BigDecimal bigNumber2 = BigDecimal.valueOf(askingTb.getAmount());
+                BigDecimal value = bigNumber1.subtract(bigNumber2);
+                usertb.setCoin(value.doubleValue());
                 //?????
                 //출금처리를 승인을 하면 어떻게 지갑으로 보내주지?
                 userRepository.save(usertb);

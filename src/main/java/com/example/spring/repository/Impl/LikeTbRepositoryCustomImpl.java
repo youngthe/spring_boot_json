@@ -35,12 +35,12 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
         }
     }
 
-    public LikeTb getLike(LikeTb likeTb){
+    public LikeTb getLikeByUserIdAndCommunityId(LikeTb likeTb){
         QLikeTb qLikeTb = QLikeTb.like;
 
         return query
                 .selectFrom(qLikeTb)
-                .where(qLikeTb.user_id.eq(likeTb.getUser_id()))
+                .where(qLikeTb.user_id.eq(likeTb.getLike_id()))
                 .where(qLikeTb.community_id.eq(likeTb.getCommunity_id()))
                 .fetchOne();
 

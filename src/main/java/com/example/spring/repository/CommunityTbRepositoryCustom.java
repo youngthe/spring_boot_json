@@ -19,6 +19,11 @@ public interface CommunityTbRepositoryCustom {
     public List<TestContent> getCommunityByCategory(String category);
 
     public TestContent getCommunBylast();
+
+
+    public List<TestContent> getCommunityByUserId(int user_id);
+
+    public List<CommunityTb> getCommunityListByUserId(int user_id);
 }
 
 

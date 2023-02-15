@@ -23,4 +23,9 @@ public interface CommentTbRepositoryCustom {
 
     public List<CommentTb> getRecommentByCommentId(int comment_id);
 
+    public int getCommentListSize(int Community_id);
+
+    public List<CommentTb> getCommentByUserId(int user_id);
+
+    public List<CommentTb> getCommentListDistinct(int user_id);
 }

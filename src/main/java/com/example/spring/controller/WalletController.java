@@ -169,6 +169,12 @@ public class WalletController {
 
         int coin = Integer.parseInt(data.get("coin").toString());
 
+        if(coin <= 0){
+            result.put("message", "can't less than 0");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         //지갑을 선택해서 지갑에 있는 돈으로 스테이킹
         int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
         String name = data.get("name").toString();

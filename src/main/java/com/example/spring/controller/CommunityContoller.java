@@ -1,10 +1,7 @@
 package com.example.spring.controller;
 
 import com.example.spring.dao.*;
-import com.example.spring.dto.CommentWriterDto;
-import com.example.spring.dto.CommunityWriterDto;
-import com.example.spring.dto.CommunityWriterDtoWithoutContent;
-import com.example.spring.dto.RecommentDto;
+import com.example.spring.dto.*;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import com.querydsl.core.Tuple;
@@ -20,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -84,7 +82,6 @@ public class CommunityContoller {
         try{
 
             List<TestContent> communityTbListByCategory  =  communityRepository.getCommunityByCategory(category);
-
             System.out.println("size : " + communityTbListByCategory.size());
 
             System.out.println(communityTbListByCategory);
@@ -92,7 +89,12 @@ public class CommunityContoller {
             if(end>=communityTbListByCategory.size()) end = communityTbListByCategory.size()-1;
             List<CommunityWriterDtoWithoutContent> communityTbListByorder = new ArrayList<>();
             for(int i=start;i<=end;i++){
-                CommunityWriterDtoWithoutContent communityWriterDto = new CommunityWriterDtoWithoutContent(communityTbListByCategory.get(i), userRepository.getNameByPk(communityTbListByCategory.get(i).getUser_id()));
+                String name = userRepository.getNameByPk(communityTbListByCategory.get(i).getUser_id());
+
+                int total_like = likeRepository.getLikeTotal(communityTbListByCategory.get(i).getCommunity_id());
+                double total_reward = communityTbListByCategory.get(i).getHits() + communityTbListByCategory.get(i).getGet_coin() + total_like;
+
+                CommunityWriterDtoWithoutContent communityWriterDto = new CommunityWriterDtoWithoutContent(communityTbListByCategory.get(i), name, total_like, total_reward);
                 communityTbListByorder.add(communityWriterDto);
             }
 
@@ -175,7 +177,12 @@ public class CommunityContoller {
 
             if(highlight){
                 if(user.getCoin() >= 1){
-                    user.setCoin(user.getCoin() - 1);
+
+                    BigDecimal number1 = BigDecimal.valueOf (user.getCoin());
+                    BigDecimal number2 = BigDecimal.valueOf(1);
+
+                    user.setCoin(number1.subtract(number2).doubleValue());
+
                 }else{
                     result.put("message", "1 coin lack");
                     result.put("resultCode", "false");
@@ -254,10 +261,10 @@ public class CommunityContoller {
                 commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
 
 
-                my_like = commentlikeRepository.CommentLikeCheck(commentLikeTb);
+                my_like = commentlikeRepository.CommentLikeCheckByAll(commentLikeTb);
 
                 List<CommentTb> reply = commentRepository.getRecommentByCommentId(commentTbList.get(i).getComment_id());
-                List<RecommentDto> recommentWriterDto_list = new ArrayList<>();
+                List<RecommentDto> reCommentWriterDto_list = new ArrayList<>();
                 System.out.println("reply Size : " + reply.size());
 
                 for(int j=0;j<reply.size();j++){
@@ -268,12 +275,12 @@ public class CommunityContoller {
                     recommentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
 
                     recomment_name = userRepository.getUserTbByUserId(reply.get(j).getUser_id()).getName();
-                    recomment_like = commentlikeRepository.CommentLikeCheck(recommentLikeTb);
+                    recomment_like = commentlikeRepository.CommentLikeCheckByAll(recommentLikeTb);
                     recomment_like_total = commentlikeRepository.getCommentLike_total(reply.get(j).getComment_id());
                     RecommentDto recommentDto = new RecommentDto(reply.get(j), recomment_name, recomment_like, recomment_like_total);
-                    recommentWriterDto_list.add(recommentDto);
+                    reCommentWriterDto_list.add(recommentDto);
                 }
-                CommentWriterDto commentWriterDto = new CommentWriterDto(commentTbList.get(i), name, my_like, like_total, recommentWriterDto_list);
+                CommentWriterDto commentWriterDto = new CommentWriterDto(commentTbList.get(i), name, my_like, like_total, reCommentWriterDto_list);
                 System.out.println("test : " + my_like);
                 commentWriterDto_list.add(commentWriterDto);
             }
@@ -287,7 +294,7 @@ public class CommunityContoller {
 
 
             int get_likeTotal = likeRepository.getLikeTotal(community_id);
-            int comment_total = commentTbList.size();
+            int comment_total = commentRepository.getCommentListSize(community_id);
             double total_reward = community.getHits() + community.getGet_coin() + get_likeTotal;
             CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, user.getName(), likeResult, get_likeTotal, comment_total, total_reward);
 
@@ -414,7 +421,11 @@ public class CommunityContoller {
                 //원래는 하이라이트를 안했다가, 하이라이트를 추가한 경우 코인 삭감
                 if(!communityTb.isHighlight() && highlight){
                     UserTb userTb = userRepository.getUserTbByUserId(user_id);
-                    userTb.setCoin(userTb.getCoin() - 1);
+                    BigDecimal bigNumber3 = BigDecimal.valueOf(userTb.getCoin());
+                    BigDecimal bigNumber4 = BigDecimal.valueOf(1);
+
+                    userTb.setCoin(bigNumber3.subtract(bigNumber4).doubleValue());
+
                     communityTb.setTitle(title);
                     communityTb.setContent(content);
                     communityTb.setCategory(category);
@@ -470,7 +481,7 @@ public class CommunityContoller {
 
         if(likeRepository.LikeCheck(likeTb)){
 
-            LikeTb heart = likeRepository.getLike(likeTb);
+            LikeTb heart = likeRepository.getLikeByUserIdAndCommunityId(likeTb);
             likeRepository.delete(heart);
             result.put("message", "unpushed");
             result.put("resultCode", "true");
@@ -507,7 +518,13 @@ public class CommunityContoller {
             return result;
         }
 
-        double coin = (double) data.get("coin");
+        double coin = Double.parseDouble(data.get("coin").toString());
+
+        if(coin <= 0){
+            result.put("message", "can't be less than 0");
+            result.put("resultCode", "false");
+            return result;
+        }
         //사용자가 후원할 코인이 있는지 확인해야함
         UserTb Donator = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         CommunityTb communityTb = communityRepository.getCommunityById(community_id);
@@ -523,16 +540,18 @@ public class CommunityContoller {
 
             communityTb.setGet_coin(communityTb.getGet_coin() + coin);
             communityRepository.save(communityTb);
-            UserTb writer = userRepository.getUserTbByUserId(communityTb.getUser_id());
 
+            UserTb writerUser = userRepository.getUserTbByUserId(communityTb.getUser_id());
+            BigDecimal bigNumber1 = BigDecimal.valueOf(writerUser.getCoin());
+            BigDecimal bigNumber2 = BigDecimal.valueOf(coin);
+            BigDecimal value = bigNumber1.add(bigNumber2);
+            writerUser.setCoin(value.doubleValue());
 
-            writer.setCoin(writer.getCoin() + coin);
-            userRepository.save(writer);
-
-            UserTb writerUser = userRepository.getUserTbByUserId(writer.getUser_id());
-            writerUser.setCoin(writerUser.getCoin() + coin);
             userRepository.save(writerUser);
-            Donator.setCoin(Donator.getCoin() - coin);
+
+            BigDecimal bigNumber3 = BigDecimal.valueOf(Donator.getCoin());
+            BigDecimal bigNumber4 = BigDecimal.valueOf(coin);
+            Donator.setCoin(bigNumber3.subtract(bigNumber4).doubleValue());
             userRepository.save(Donator);
 
             result.put("resultCode", "true");
@@ -560,11 +579,16 @@ public class CommunityContoller {
             result.put("resultCode", "false");
             return result;
         }
-        
+
+
+
         try{
             UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
             if(userTb.getCoin() >= 1){
-                userTb.setCoin(userTb.getCoin() - 1);
+                BigDecimal bigNumber1 = BigDecimal.valueOf(userTb.getCoin());
+                BigDecimal bigNumber2 = BigDecimal.valueOf(1);
+
+                userTb.setCoin(bigNumber1.subtract(bigNumber2).doubleValue());
                 CommunityTb communityTb = communityRepository.getCommunityById(community_id);
                 communityTb.setHighlight(true);
                 communityRepository.save(communityTb);
@@ -586,6 +610,68 @@ public class CommunityContoller {
         }
 
     }
+
+    @ApiOperation(value = "내 게시글 확인", notes = "내 게시글 확인")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "nowpage", value = "현재 페이지 번호", required = true),
+            @ApiImplicitParam(name = "count", value = "보여줄 게시글 갯수", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/my-community", method = RequestMethod.GET)
+    public HashMap my_community(@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage, @RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int start = countpage * nowpage;
+        int end = countpage*(nowpage+1) - 1;
+
+
+        System.out.println("start : " + start);
+        System.out.println("end : " + end);
+        try{
+
+            List<CommunityTb> mycommunity = communityRepository.getCommunityListByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            List<MyCommunityDto> communityDtoList = new ArrayList<>();
+
+            if(end>=mycommunity.size()) end = mycommunity.size()-1;
+
+            int like_total;
+            double total_reward;
+            String user_name;
+            int comment_total;
+
+
+            for(int i=start;i<=end;i++){
+                comment_total = commentRepository.getCommentListSize(mycommunity.get(i).getCommunity_id());
+                like_total = likeRepository.getLikeTotal(mycommunity.get(i).getCommunity_id());
+                total_reward = mycommunity.get(i).getHits() + mycommunity.get(i).getGet_coin() + like_total;
+                user_name = userRepository.getNameByPk(jwtTokenProvider.getUserId(tokenHeader));
+                MyCommunityDto dto = new MyCommunityDto(mycommunity.get(i), comment_total, like_total, total_reward, user_name);
+                communityDtoList.add(dto);
+            }
+            result.put("total", mycommunity.size());
+            result.put("community", communityDtoList);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+
+            result.put("resultCode", "false");
+            result.put("message", "db error");
+            return result;
+
+        }
+
+    }
+    
 
 
 }

@@ -31,8 +31,11 @@ public class UserTb {
     @Column(length = 20)
     private String name;
 
-    @Column(length = 20)
+    @Column()
     private double coin;
+
+    @Column(length = 20)
+    private String role;
 
 
 }
