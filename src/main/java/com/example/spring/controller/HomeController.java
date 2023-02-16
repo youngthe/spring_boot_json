@@ -174,7 +174,7 @@ public class HomeController {
         }
     }
 
-    @ApiOperation(value = "내 정보 확인", notes = "현재 로그인 되어 있는 사용자의 정보, 지갑, 내 스테이킹 정보 주는 엔드포인트")
+    @ApiOperation(value = "내 정보 확인", notes = "현재 로그인 되어 있는 사용자의 정보, wallet, user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode, wallet, staking, user")
     })
@@ -192,14 +192,11 @@ public class HomeController {
         int user_id = jwtTokenProvider.getUserId(tokenHeader);
 
         try {
-            WalletTb walletTb = walletRepository.getWalletByUser_id(user_id);
+            List<WalletTb> walletTb = walletRepository.getWalletByUser_id(user_id);
             UserTb userTb = userRepository.getUserTbByUserId(user_id);
-            StakingTb stakingTb = stakingRepository.getStakingTbByUserId(user_id);
 
             result.put("wallet", walletTb);
             result.put("user", userTb);
-            result.put("staking", stakingTb);
-
             result.put("resultCode", "true");
             return result;
 
@@ -307,7 +304,10 @@ public class HomeController {
             return result;
         }
 
-        String coin = data.get("coin").toString();
+        double coin = Double.parseDouble(data.get("coin").toString());
+        BigDecimal num1 = BigDecimal.valueOf(coin);
+        BigDecimal num2 = new BigDecimal("105");
+        coin = num1.multiply(num2).doubleValue();
 
         try {
 

@@ -1,6 +1,7 @@
 package com.example.spring.domain;
 
 import com.example.spring.dao.StakingTb;
+import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
@@ -20,6 +21,7 @@ public class QStakingTb extends EntityPathBase<StakingTb>{
         public final StringPath name = createString("name");
         public final NumberPath<Double> start_amount =  createNumber("start_amount", double.class);
         public final NumberPath<Double> percent =  createNumber("percent", double.class);
+        public final BooleanPath state = createBoolean("state");
         public QStakingTb(String variable) {
 
             super(StakingTb.class, forVariable(variable));

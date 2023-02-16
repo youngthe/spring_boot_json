@@ -681,15 +681,9 @@ public class CommunityContoller {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
     @RequestMapping(value="/community-recently", method = RequestMethod.GET)
-    public HashMap my_community(@RequestParam int count, @RequestHeader("token") String tokenHeader){
+    public HashMap my_community(@RequestParam int count){
 
         HashMap<String, Object> result = new HashMap<>();
-
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
 
         if(ObjectUtils.isEmpty(count)){
             result.put("message", "count is null");
@@ -698,7 +692,6 @@ public class CommunityContoller {
         }
 
         try{
-
             int like_total;
             double total_reward;
             String user_name;
@@ -715,7 +708,7 @@ public class CommunityContoller {
                 comment_total = commentRepository.getCommentListSize(communityList.get(i).getCommunity_id());
                 like_total = likeRepository.getLikeTotal(communityList.get(i).getCommunity_id());
                 total_reward = communityList.get(i).getHits() + communityList.get(i).getGet_coin() + like_total;
-                user_name = userRepository.getNameByPk(jwtTokenProvider.getUserId(tokenHeader));
+                user_name = userRepository.getNameByPk(communityList.get(i).getUser_id());
                 MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, total_reward, user_name);
                 communityDtoList.add(dto);
 

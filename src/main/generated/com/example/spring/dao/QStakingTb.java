@@ -19,11 +19,11 @@ public class QStakingTb extends EntityPathBase<StakingTb> {
 
     public static final QStakingTb stakingTb = new QStakingTb("stakingTb");
 
-    public final DatePath<java.time.LocalDate> created_date = createDate("created_date", java.time.LocalDate.class);
+    public final DateTimePath<java.util.Date> created_date = createDateTime("created_date", java.util.Date.class);
 
-    public final DatePath<java.time.LocalDate> expire_date = createDate("expire_date", java.time.LocalDate.class);
+    public final DateTimePath<java.util.Date> expire_date = createDateTime("expire_date", java.util.Date.class);
 
-    public final DatePath<java.time.LocalDate> last_modified_date = createDate("last_modified_date", java.time.LocalDate.class);
+    public final DateTimePath<java.util.Date> last_modified_date = createDateTime("last_modified_date", java.util.Date.class);
 
     public final StringPath name = createString("name");
 
@@ -35,9 +35,11 @@ public class QStakingTb extends EntityPathBase<StakingTb> {
 
     public final NumberPath<Double> start_amount = createNumber("start_amount", Double.class);
 
+    public final BooleanPath state = createBoolean("state");
+
     public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 
-    public final NumberPath<Integer> wallet_id = createNumber("wallet_id", Integer.class);
+    public final StringPath wallet_address = createString("wallet_address");
 
     public QStakingTb(String variable) {
         super(StakingTb.class, forVariable(variable));

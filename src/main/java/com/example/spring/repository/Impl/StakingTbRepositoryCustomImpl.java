@@ -8,6 +8,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.List;
+
 public class StakingTbRepositoryCustomImpl extends QuerydslRepositorySupport implements StakingTbRepositoryCustom {
 
     @Autowired
@@ -29,13 +31,25 @@ public class StakingTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
     }
 
-    public StakingTb getStakingTbByUserId(int user_id){
+    public List<StakingTb> getStakingTbByUserId(int user_id){
 
         QStakingTb qStakingTb = QStakingTb.stakingTb;
 
         return query.selectFrom(qStakingTb)
                 .where(qStakingTb.user_id.eq(user_id))
-                .fetchOne();
+                .fetch();
+
+
+    }
+
+
+    public List<StakingTb> getStakingTbThatStateTrue(){
+
+        QStakingTb qStakingTb = QStakingTb.stakingTb;
+
+        return query.selectFrom(qStakingTb)
+                .where(qStakingTb.state.eq(true))
+                .fetch();
 
 
     }

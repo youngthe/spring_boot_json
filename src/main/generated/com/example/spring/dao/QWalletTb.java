@@ -21,11 +21,9 @@ public class QWalletTb extends EntityPathBase<WalletTb> {
 
     public final StringPath address = createString("address");
 
-    public final NumberPath<Double> coin = createNumber("coin", Double.class);
+    public final DateTimePath<java.util.Date> created_date = createDateTime("created_date", java.util.Date.class);
 
-    public final DatePath<java.time.LocalDate> created_date = createDate("created_date", java.time.LocalDate.class);
-
-    public final DatePath<java.time.LocalDate> last_modified_date = createDate("last_modified_date", java.time.LocalDate.class);
+    public final DateTimePath<java.util.Date> last_modified_date = createDateTime("last_modified_date", java.util.Date.class);
 
     public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 

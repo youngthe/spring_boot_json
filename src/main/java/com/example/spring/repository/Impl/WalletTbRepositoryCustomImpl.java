@@ -7,6 +7,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.List;
+
 public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport implements WalletTbRepositoryCustom {
 
     public WalletTbRepositoryCustomImpl() {
@@ -47,18 +49,18 @@ public class WalletTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
 
         return query.selectFrom(qWalletTb)
                 .where(qWalletTb.wallet_id.eq(wallet_id))
-                .fetchOne();
+                .fetch().get(0);
 
     }
 
     @Override
-    public WalletTb getWalletByUser_id(int user_id) {
+    public List<WalletTb> getWalletByUser_id(int user_id) {
 
         QWalletTb qWalletTb = QWalletTb.wallet;
 
         return query.selectFrom(qWalletTb)
                 .where(qWalletTb.user_id.eq(user_id))
-                .fetchOne();
+                .fetch();
 
     }
 }

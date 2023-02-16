@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -23,13 +24,11 @@ public class WalletTb {
     private String address;
 
     @Column(nullable = false)
-    private LocalDate created_date;
+    private Date created_date;
 
     @Column(nullable = false)
-    private LocalDate last_modified_date;
+    private Date last_modified_date;
 
-    @Column(nullable = false)
-    private double coin;
 
 
 }
