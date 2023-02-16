@@ -4,6 +4,7 @@ import com.example.spring.dao.AskingTb;
 import com.example.spring.dao.StakingTb;
 import com.example.spring.dao.UserTb;
 import com.example.spring.dao.WalletTb;
+import com.example.spring.dto.StakingDto;
 import com.example.spring.repository.AskingRepository;
 import com.example.spring.repository.StakingRepository;
 import com.example.spring.repository.UserRepository;
@@ -21,10 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 public class WalletController {
@@ -76,14 +76,14 @@ public class WalletController {
 
         try {
 
-            LocalDate now = LocalDate.now();
+            Date now = new Date();
             WalletTb walletTb = new WalletTb();
             walletTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
             walletTb.setAddress(address);
             walletTb.setCreated_date(now);
             walletTb.setLast_modified_date(now);
-            walletTb.setCoin(0);
             walletRepository.save(walletTb);
+            result.put("wallet_id", walletTb.getWallet_id());
             result.put("resultCode", "true");
 
         } catch (Exception e) {
@@ -137,10 +137,41 @@ public class WalletController {
         return result;
     }
 
+    @ApiOperation(value = "지갑 확인", notes = "내가 가진 지갑 주소 확인하기")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/wallet", method = RequestMethod.GET)
+    public HashMap wallet_view(@RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
+        try {
+            List<WalletTb> wallet = walletRepository.getWalletByUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            result.put("wallet", wallet);
+            result.put("resultCode", "true");
+            return result;
+
+        } catch (Exception e) {
+            log.info("{}", e);
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+        }
+
+        return result;
+    }
+
     @ApiOperation(value = "스테이킹 추가", notes = "코인으로 스테이킹 등록")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "coin", value = "스테이킹할 코인 갯수", required = true),
-            @ApiImplicitParam(name = "name", value = "스테이킹 이름", required = true),
+            @ApiImplicitParam(name = "id", value = "지갑 uuid", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
@@ -161,13 +192,15 @@ public class WalletController {
             result.put("resultCode", "false");
             return result;
         }
-        if(ObjectUtils.isEmpty(data.get("name"))){
-            result.put("message", "name is null");
+        if(ObjectUtils.isEmpty(data.get("id"))){
+            result.put("message", "id is null");
             result.put("resultCode", "false");
             return result;
         }
 
-        int coin = Integer.parseInt(data.get("coin").toString());
+
+        double coin = Double.parseDouble(data.get("coin").toString());
+        String id = data.get("id").toString();
 
         if(coin <= 0){
             result.put("message", "can't less than 0");
@@ -175,46 +208,64 @@ public class WalletController {
             return result;
         }
 
-        //지갑을 선택해서 지갑에 있는 돈으로 스테이킹
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-        String name = data.get("name").toString();
 
         // ex 스테이킹한 금액의 0.05센트를 1년 경과 시 지급
         double interest_rate = 0.05;
 
-        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
+        try{
 
-        if (walletTb.getCoin() >= coin) {
+            UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            if (user.getCoin() >= coin) {
 
-            double total = walletTb.getCoin() - coin;
-            walletTb.setCoin(total);
-            walletRepository.save(walletTb);
+                BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
+                BigDecimal number2 = BigDecimal.valueOf(coin);
 
-            StakingTb stakingTb = new StakingTb();
-            LocalDate now = LocalDate.now();
-            LocalDate afterOneYear = now.plusYears(1);
-            Date date = new Date();
+                user.setCoin(number1.subtract(number2).doubleValue());
+                userRepository.save(user);
 
-            stakingTb.setWallet_id(wallet_id);
-            stakingTb.setName(name);
-            stakingTb.setExpire_date(afterOneYear);
-            stakingTb.setCreated_date(now);
-            stakingTb.setReward_amount(coin);
-            stakingTb.setLast_modified_date(now);
-            stakingTb.setStart_amount(coin);
-            stakingTb.setPercent(3); //연 3 퍼센트 이자
-            stakingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                StakingTb stakingTb = new StakingTb();
+                Date now = new Date();
 
-            stakingRepository.save(stakingTb);
+                Calendar cal = Calendar.getInstance();
+                cal.add(Calendar.DAY_OF_MONTH, 365);
 
-            result.put("resultCode", "true");
+                Date nextThreeMonth = cal.getTime();
 
-        } else {
-            result.put("message", "over");
+                stakingTb.setWallet_address("");
+                stakingTb.setName(id);
+                stakingTb.setExpire_date(nextThreeMonth);
+                stakingTb.setCreated_date(now);
+                BigDecimal number3 = BigDecimal.valueOf(coin);
+                BigDecimal number4 = new BigDecimal("1.03");
+                stakingTb.setReward_amount(number3.multiply(number4).doubleValue());
+                stakingTb.setLast_modified_date(now);
+                stakingTb.setStart_amount(coin);
+                stakingTb.setPercent(3); //연 3 퍼센트 이자
+                stakingTb.setState(true);
+                stakingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+
+                stakingRepository.save(stakingTb);
+
+                StakingDto stakingDto = new StakingDto(stakingTb);
+
+                result.put("staking", stakingDto);
+                result.put("resultCode", "true");
+                return result;
+
+            } else {
+                result.put("message", "coin over");
+                result.put("resultCode", "false");
+                return result;
+            }
+
+        }catch (Exception e){
+            log.info("{}", e);
+            result.put("message", "db error");
             result.put("resultCode", "false");
+            return result;
         }
 
-        return result;
+
     }
 
     @ApiOperation(value = "스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
@@ -252,10 +303,16 @@ public class WalletController {
         WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
         StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
 
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if (jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()) {
             double start_amount = stakingTb.getStart_amount();
-            walletTb.setCoin(walletTb.getCoin() + start_amount);
-            walletRepository.save(walletTb);
+            BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
+            BigDecimal number2 = BigDecimal.valueOf(stakingTb.getStart_amount());
+
+
+            user.setCoin(number1.add(number2).doubleValue());
+
+            userRepository.save(user);
             stakingRepository.delete(stakingTb);
             result.put("resultCode", "true");
 
@@ -265,6 +322,43 @@ public class WalletController {
         }
 
         return result;
+    }
+
+    @ApiOperation(value = "내 스테이킹 확인", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/staking", method = RequestMethod.GET)
+    public HashMap staking_view(@RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try{
+            List<StakingTb> stakingTb = stakingRepository.getStakingTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            List<StakingDto> stakingDtos = new ArrayList<>();
+            for(int i=0;i<stakingTb.size();i++){
+                stakingTb.get(i);
+                StakingDto stakingDto = new StakingDto(stakingTb.get(i));
+                stakingDtos.add(stakingDto);
+            }
+
+            result.put("staking", stakingDtos);
+            result.put("resultCode", "true");
+            return result;
+        }catch(Exception e){
+            log.info("{}", e);
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
     }
 
     @ApiOperation(value = "입금 요청", notes = "지갑에서 서버계정으로 입금 요청")
