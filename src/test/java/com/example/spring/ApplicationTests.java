@@ -10,8 +10,11 @@ import com.example.spring.repository.WithoutContent;
 import com.example.spring.utils.Calculator;
 import com.querydsl.core.Tuple;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.text.SimpleDateFormat;
@@ -31,6 +34,8 @@ class ApplicationTests {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
     @Test
     void contextLoads() {
 
@@ -56,13 +61,6 @@ class ApplicationTests {
         System.out.println(day);
     }
 
-    @Test
-    void test(){
-//        LocalDate now = LocalDate.now();
 
-        Date now = new Date();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        System.out.println(format.format(now));
-    }
 
 }

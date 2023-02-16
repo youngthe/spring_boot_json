@@ -33,7 +33,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
 
          return
                  query
-                .select(qCommunityTb)
+                .selectFrom(qCommunityTb)
                 .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
     }
@@ -128,5 +128,29 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
                 .fetch();
 
     }
+
+    public List<CommunityTb> getCommunityBylimit(int limit){
+
+        QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
+
+        return
+                query
+                        .selectFrom(qCommunityTb)
+                        .orderBy(qCommunityTb.community_id.desc())
+                        .limit(limit)
+                        .fetch();
+    }
+
+    public List<TestContent> getCommunityListByUserIdAndDate(int user_id){
+
+        QCommunityTbWithoutContent qCommunityTb = QCommunityTbWithoutContent.CommunityTb;
+
+        return
+                query
+                        .selectFrom(qCommunityTb)
+                        .orderBy(qCommunityTb.date.asc())
+                        .fetch();
+    }
+
 
 }

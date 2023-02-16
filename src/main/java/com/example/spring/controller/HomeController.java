@@ -214,53 +214,33 @@ public class HomeController {
     @ApiOperation(value = "비밀번호 변경", notes = "비밀번호 변경")
     @RequestMapping(value = "/setting/password", method = RequestMethod.POST)
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "account", value = "기존 아이디", required = true, dataType = "String"),
-            @ApiImplicitParam(name = "pw", value = "현재 비밀번호", required = true, dataType = "string"),
             @ApiImplicitParam(name = "change_pw", value = "바꿀 비밀번호", required = true, dataType = "string"),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode, token")
     })
-    public HashMap password_check(@RequestBody HashMap<String, Object> data) {
+    public HashMap password_check(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if (ObjectUtils.isEmpty(data.get("account"))) {
-            result.put("message", "account is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-        if (ObjectUtils.isEmpty(data.get("pw"))) {
-            result.put("message", "pw is null");
-            result.put("resultCode", "false");
-            return result;
-        }
+
         if (ObjectUtils.isEmpty(data.get("change_pw"))) {
             result.put("message", "change_pw is null");
             result.put("resultCode", "false");
             return result;
         }
 
-        String account = data.get("account").toString();
-        String pw = data.get("pw").toString();
         String change_pw = data.get("change_pw").toString();
 
 
-        log.info("account : {}", account);
+
         try {
-            UserTb user = userRepository.getUserTbByAccount(account);
+            UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            user.setPw(passwordEncoder.encode(change_pw));
+            userRepository.save(user);
+            result.put("resultCode", "true");
+            return result;
 
-            String get_pw = user.getPw();
-            if (passwordEncoder.matches(pw, get_pw)) {
-
-                user.setPw(passwordEncoder.encode(change_pw));
-                result.put("resultCode", "true");
-                return result;
-            } else {
-                result.put("message", "not matching");
-                result.put("resultCode", "false");
-                return result;
-            }
         } catch (Exception e) {
             log.info("{}", e);
             result.put("message", "not exist user");
@@ -322,7 +302,7 @@ public class HomeController {
 
 
         if (ObjectUtils.isEmpty(data.get("coin"))) {
-            result.put("message", "name is null");
+            result.put("message", "coin is null");
             result.put("resultCode", "false");
             return result;
         }
@@ -338,7 +318,7 @@ public class HomeController {
             user.setCoin(number1.add(number2).doubleValue());
             userRepository.save(user);
 
-            result.put("resultCode", "false");
+            result.put("resultCode", "true");
             return result;
 
 

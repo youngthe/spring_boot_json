@@ -24,6 +24,10 @@ public interface CommunityTbRepositoryCustom {
     public List<TestContent> getCommunityByUserId(int user_id);
 
     public List<CommunityTb> getCommunityListByUserId(int user_id);
+
+    public List<CommunityTb> getCommunityBylimit(int limit);
+
+    public List<TestContent> getCommunityListByUserIdAndDate(int user_id);
 }
 
 

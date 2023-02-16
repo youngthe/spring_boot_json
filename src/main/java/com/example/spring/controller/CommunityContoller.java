@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,9 @@ public class CommunityContoller {
     @Autowired
     private CommentlikeRepository commentlikeRepository;
 
+    @Autowired
+    private CoinPushHistoryRepository coinPushHistoryRepository;
+
 
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
@@ -59,7 +63,7 @@ public class CommunityContoller {
             @ApiResponse(responseCode = "200", description = "resultCode, community")
     })
     @RequestMapping(value = "/community", method = RequestMethod.GET)
-    public HashMap community(@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage, @RequestParam ("category") String category, @RequestHeader("token") String tokenHeader) {
+    public HashMap community(@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage, @RequestParam ("category") String category, @RequestHeader(value = "token", required = false) String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -72,12 +76,6 @@ public class CommunityContoller {
         log.info("countpage : {}", countpage);
         log.info("category : {}", category);
 
-
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
 
         try{
 
@@ -218,16 +216,10 @@ public class CommunityContoller {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
     @RequestMapping(value = "/community/{community_id}", method = RequestMethod.GET)
-    public HashMap community_detail(@PathVariable("community_id") int community_id , @RequestHeader("token") String tokenHeader){
+    public HashMap community_detail(@PathVariable("community_id") int community_id , @RequestHeader(value = "token", required = false) String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
 
-
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
-            result.put("message", "Token validate");
-            result.put("resultCode", "false");
-            return result;
-        }
 
         try{
             CommunityTb community = communityRepository.getCommunityById(community_id);
@@ -554,6 +546,15 @@ public class CommunityContoller {
             Donator.setCoin(bigNumber3.subtract(bigNumber4).doubleValue());
             userRepository.save(Donator);
 
+            Date now = new Date();
+            CoinPushHistoryTb coinPushHistoryTb = new CoinPushHistoryTb();
+            coinPushHistoryTb.setCoin(coin);
+            coinPushHistoryTb.setDate(now);
+            coinPushHistoryTb.setGiver(Donator.getUser_id());
+            coinPushHistoryTb.setReceiver(writerUser.getUser_id());
+
+            coinPushHistoryRepository.save(coinPushHistoryTb);
+
             result.put("resultCode", "true");
             return result;
         }else{
@@ -671,7 +672,211 @@ public class CommunityContoller {
         }
 
     }
-    
 
+    @ApiOperation(value = "최근 게시글 조회", notes = "최근 게시글 조회")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "count", value = "보여줄 게시글 갯수", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/community-recently", method = RequestMethod.GET)
+    public HashMap my_community(@RequestParam int count, @RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(count)){
+            result.put("message", "count is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try{
+
+            int like_total;
+            double total_reward;
+            String user_name;
+            int comment_total;
+
+            System.out.println("test");
+            List<CommunityTb> communityList = communityRepository.getCommunityBylimit(count);
+
+            System.out.println(communityList);
+
+            List<MyCommunityDto> communityDtoList = new ArrayList<>();
+            for(int i=0;i< communityList.size();i++){
+
+                comment_total = commentRepository.getCommentListSize(communityList.get(i).getCommunity_id());
+                like_total = likeRepository.getLikeTotal(communityList.get(i).getCommunity_id());
+                total_reward = communityList.get(i).getHits() + communityList.get(i).getGet_coin() + like_total;
+                user_name = userRepository.getNameByPk(jwtTokenProvider.getUserId(tokenHeader));
+                MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, total_reward, user_name);
+                communityDtoList.add(dto);
+
+            }
+
+            result.put("community", communityDtoList);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+            log.info("{}", e);
+            result.put("resultCode", "false");
+            result.put("message", "db error");
+            return result;
+
+        }
+
+    }
+
+    @ApiOperation(value = "응원 받은 코인", notes = "응원 받은 코인")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/chart/coin", method = RequestMethod.GET)
+    public HashMap get_coin(@RequestHeader("token") String tokenHeader){
+
+        log.info("{}", "/chart/coin");
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try{
+
+            List<CoinPushHistoryTb> list = coinPushHistoryRepository.getCoinPushHistoryByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+            if(list.size() == 0){
+                result.put("message", "empty get coin");
+                result.put("resultCode", "true");
+                return result;
+            }
+
+            List<CoinpushDto> listDto = new ArrayList<>();
+            for(int i=0;i<list.size();i++){
+                CoinpushDto dto = new CoinpushDto(list.get(i));
+                listDto.add(dto);
+            }
+            List<String> labels = new ArrayList<>();
+            List<String> data = new ArrayList<>();
+            BigDecimal coin = new BigDecimal("0");
+
+            coin = BigDecimal.valueOf(listDto.get(0).getCoin());
+
+            for(int i=1;i<list.size();i++){
+                if(Objects.equals(listDto.get(i-1).getDate(), listDto.get(i).getDate())){
+                    BigDecimal number2 = BigDecimal.valueOf(listDto.get(i).getCoin());
+                    coin = coin.add(number2);
+
+                    if(i == list.size()-1){
+                        data.add(coin.toString());
+                        labels.add(listDto.get(i-1).getDate());
+                        System.out.println("test");
+                    }
+
+                }else{
+                    data.add(coin.toString());
+                    labels.add(listDto.get(i-1).getDate());
+                    coin = BigDecimal.valueOf(listDto.get(i).getCoin());
+
+                    if(i == list.size()-1){
+                        data.add(String.valueOf(listDto.get(i).getCoin()));
+                        labels.add(listDto.get(i).getDate());
+                    }
+                }
+            }
+
+            //일별로 합쳐야할거같은데
+            result.put("labels", labels);
+            result.put("datasets", data);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+            log.info("{}", e);
+            result.put("resultCode", "false");
+            result.put("message", "db error");
+            return result;
+
+        }
+
+    }
+
+    @ApiOperation(value = "내가 쓴 글 차트", notes = "내가 쓴 글 차트")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/chart/write", method = RequestMethod.GET)
+    public HashMap get_write_chart(@RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try{
+
+            List<TestContent> list = communityRepository.getCommunityListByUserIdAndDate(jwtTokenProvider.getUserId(tokenHeader));
+
+            System.out.println("list size : " + list.size());
+            if(list.size() == 0){
+                result.put("message", "empty community");
+                result.put("resultCode", "true");
+                return result;
+            }
+            List<WriteChartDto> chart = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
+            List<String> data = new ArrayList<>();
+
+            for(int i=0;i<list.size();i++) {
+                WriteChartDto dto = new WriteChartDto(list.get(i));
+                chart.add(dto);
+            }
+
+            String date = chart.get(0).getDate();
+            labels.add(date);
+
+            int community_count = 1;
+            for(int i=1;i<list.size();i++) {
+                if(Objects.equals(chart.get(i-1).getDate(), chart.get(i).getDate())) {
+                    community_count++;
+
+                    if(i == list.size()-1){
+                        data.add(String.valueOf(community_count));
+                    }
+                }else {
+                    data.add(String.valueOf(community_count));
+                    labels.add(chart.get(i).getDate());
+                    community_count = 1;
+
+                    if(i == list.size()-1){
+                        data.add(String.valueOf(community_count));
+                    }
+                }
+            }
+            result.put("labels", labels);
+            result.put("datasets", data);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e ){
+            log.info("{}", e);
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
 
 }
