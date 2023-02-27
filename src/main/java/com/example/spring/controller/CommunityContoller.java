@@ -216,29 +216,44 @@ public class CommunityContoller {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
     @RequestMapping(value = "/community/{community_id}", method = RequestMethod.GET)
-    public HashMap community_detail(@PathVariable("community_id") int community_id , @RequestHeader(value = "token", required = false) String tokenHeader){
+    public HashMap community_detail(@PathVariable("community_id") int community_id, @RequestHeader("token") String tokenHeader){
 
         HashMap<String, Object> result = new HashMap<>();
+        boolean likeResult = false;
+        if(!tokenHeader.isEmpty()){
 
+            if(!jwtTokenProvider.validateToken(tokenHeader)){
+                result.put("message", "Token validate");
+                result.put("resultCode", "false");
+                return result;
+            }
+
+            System.out.println("token on");
+            LikeTb like = new LikeTb();
+            like.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            like.setCommunity_id(community_id);
+
+            likeResult = likeRepository.LikeCheck(like);
+
+            System.out.println(likeRepository.LikeCheck(like));
+
+        }else{
+            System.out.println("token off");
+            LikeTb like = new LikeTb();
+            likeResult = false;
+        }
 
         try{
             CommunityTb community = communityRepository.getCommunityById(community_id);
 
             UserTb user = userRepository.getUserTbByUserId(community.getUser_id());
 
-            LikeTb like = new LikeTb();
-            like.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-            like.setCommunity_id(community_id);
-            boolean likeResult = likeRepository.LikeCheck(like);
-
-            System.out.println(likeRepository.LikeCheck(like));
-
             List<CommentTb> commentTbList = commentRepository.getCommentList(community_id);
             List<CommentWriterDto> commentWriterDto_list = new ArrayList<>();
 
 
             String name, recomment_name;
-            boolean my_like, recomment_like;
+            boolean my_like = false, recomment_like;
             int like_total, recomment_like_total;
 
             System.out.println("commentTbList Size : " + commentTbList.size());
@@ -250,10 +265,11 @@ public class CommunityContoller {
                 CommentLikeTb commentLikeTb = new CommentLikeTb();
                 commentLikeTb.setComment_id(commentTbList.get(i).getComment_id());
                 commentLikeTb.setCommunity_id(community_id);
-                commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                if(!tokenHeader.isEmpty()) {
+                    commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                    my_like = commentlikeRepository.CommentLikeCheckByAll(commentLikeTb);
+                }
 
-
-                my_like = commentlikeRepository.CommentLikeCheckByAll(commentLikeTb);
 
                 List<CommentTb> reply = commentRepository.getRecommentByCommentId(commentTbList.get(i).getComment_id());
                 List<RecommentDto> reCommentWriterDto_list = new ArrayList<>();
@@ -264,7 +280,10 @@ public class CommunityContoller {
                     CommentLikeTb recommentLikeTb = new CommentLikeTb();
                     recommentLikeTb.setComment_id(reply.get(j).getComment_id());
                     recommentLikeTb.setCommunity_id(community_id);
-                    recommentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                    if(!tokenHeader.isEmpty()) {
+                        recommentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                    }
+
 
                     recomment_name = userRepository.getUserTbByUserId(reply.get(j).getUser_id()).getName();
                     recomment_like = commentlikeRepository.CommentLikeCheckByAll(recommentLikeTb);
@@ -281,7 +300,11 @@ public class CommunityContoller {
 
             CommentLikeTb commentLikeTb = new CommentLikeTb();
             commentLikeTb.setCommunity_id(community_id);
-            commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+
+
+            if(!tokenHeader.isEmpty()) {
+                commentLikeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            }
 
 
 
@@ -296,9 +319,8 @@ public class CommunityContoller {
             return result;
 
         }catch(Exception e){
-            System.out.println("db error");
             System.out.println(e);
-            result.put("message", "page null");
+            result.put("message", "");
             result.put("resultCode", "false");
             return result;
         }
@@ -327,7 +349,10 @@ public class CommunityContoller {
 
             int community_writer = community.getUser_id();
 
-            if(user.getUser_id() == community_writer){
+            int user_id = jwtTokenProvider.getUserId(tokenHeader);
+            String user_role = userRepository.getRoleByUserId(user_id);
+
+            if(user.getUser_id() == community_writer || user_role.equals("admin")){
 
                 communityRepository.deleteById(community_id);
                 commentRepository.deleteByCommunityId(community_id);

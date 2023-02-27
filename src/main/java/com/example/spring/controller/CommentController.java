@@ -68,8 +68,8 @@ public class CommentController {
         try{
             CommentTb commentTb = commentRepository.getCommentByCommentId(comment_id);
 
-            ;
-            if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader)){
+            int user_id = jwtTokenProvider.getUserId(tokenHeader);
+            if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_id == 1){
 
                 commentRepository.deleteById(comment_id);
                 commentRepository.deleteByParent(comment_id);
@@ -226,7 +226,9 @@ public class CommentController {
 
         CommentTb commentTb = commentRepository.getCommentByCommentId(comment_id);
 
-        if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader)){
+        int user_id = jwtTokenProvider.getUserId(tokenHeader);
+
+        if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_id == 1){
 
             commentTb.setComment(comment);
             commentRepository.save(commentTb);

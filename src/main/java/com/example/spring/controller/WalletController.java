@@ -136,6 +136,45 @@ public class WalletController {
 
         return result;
     }
+    
+    @ApiOperation(value = "지갑 삭제", notes = "지갑 주소 삭제하기")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/wallet/{wallet_id}", method = RequestMethod.DELETE)
+    public HashMap wallet_delete(@PathVariable ("wallet_id") int wallet_id, @RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try {
+            WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
+
+            int user_id = jwtTokenProvider.getUserId(tokenHeader);
+            String user_role = userRepository.getRoleByUserId(user_id);
+
+            if (walletTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_role.equals("admin")) {
+                walletRepository.delete(walletTb);
+                result.put("resultCode", "true");
+            } else {
+                result.put("message", "unauthorized");
+                result.put("resultCode", "false");
+            }
+
+        } catch (Exception e) {
+            result.put("resultCode", "false");
+        }
+
+        return result;
+    }
 
     @ApiOperation(value = "지갑 확인", notes = "내가 가진 지갑 주소 확인하기")
     @ApiResponses(value = {
