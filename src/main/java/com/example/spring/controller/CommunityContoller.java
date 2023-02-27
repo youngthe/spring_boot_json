@@ -433,8 +433,8 @@ public class CommunityContoller {
         try{
             CommunityTb communityTb = communityRepository.getCommunityById(community_id);
             int user_id = jwtTokenProvider.getUserId(tokenHeader);
-
-            if(user_id == communityTb.getUser_id()){
+            String user_role = userRepository.getRoleByUserId(user_id);
+            if(user_id == communityTb.getUser_id() || user_role.equals("admin")){
                 //원래는 하이라이트를 안했다가, 하이라이트를 추가한 경우 코인 삭감
                 if(!communityTb.isHighlight() && highlight){
                     UserTb userTb = userRepository.getUserTbByUserId(user_id);

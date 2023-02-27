@@ -89,4 +89,14 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
                 .fetchOne()
                 .getName();
     }
+
+    public String getRoleByUserId(int user_id){
+
+        QUserTb qusertb = QUserTb.user;
+
+        return query.selectFrom(qusertb)
+                .where(qusertb.user_id.eq(user_id))
+                .fetchOne().getRole();
+
+    }
 }

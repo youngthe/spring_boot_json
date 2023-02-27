@@ -69,7 +69,8 @@ public class CommentController {
             CommentTb commentTb = commentRepository.getCommentByCommentId(comment_id);
 
             int user_id = jwtTokenProvider.getUserId(tokenHeader);
-            if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_id == 1){
+            String user_role = userRepository.getRoleByUserId(user_id);
+            if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_role.equals("admin")){
 
                 commentRepository.deleteById(comment_id);
                 commentRepository.deleteByParent(comment_id);
@@ -227,8 +228,8 @@ public class CommentController {
         CommentTb commentTb = commentRepository.getCommentByCommentId(comment_id);
 
         int user_id = jwtTokenProvider.getUserId(tokenHeader);
-
-        if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_id == 1){
+        String user_role = userRepository.getRoleByUserId(user_id);
+        if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_role.equals("admin")){
 
             commentTb.setComment(comment);
             commentRepository.save(commentTb);

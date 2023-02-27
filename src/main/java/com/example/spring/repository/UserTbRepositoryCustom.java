@@ -15,4 +15,6 @@ public interface UserTbRepositoryCustom {
     public String getNameByPk(int pk);
 
     public boolean AccountCheck(String account);
+
+    public String getRoleByUserId(int user_id);
 }
