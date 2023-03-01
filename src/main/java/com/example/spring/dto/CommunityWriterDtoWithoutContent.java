@@ -40,7 +40,7 @@ public class CommunityWriterDtoWithoutContent {
         this.community_id = communityTb.getCommunity_id();
         this.title = communityTb.getTitle();
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.date = format.format(communityTb.getDate());
         this.hits = communityTb.getHits();
         this.user_id = communityTb.getUser_id();

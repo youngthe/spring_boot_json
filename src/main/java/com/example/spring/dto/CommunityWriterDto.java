@@ -48,7 +48,7 @@ public class CommunityWriterDto {
         this.community_id = communityTb.getCommunity_id();
         this.title = communityTb.getTitle();
         this.content = communityTb.getContent();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.hits = communityTb.getHits();
         this.date = format.format(communityTb.getDate());
         this.user_id = communityTb.getUser_id();

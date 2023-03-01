@@ -45,7 +45,7 @@ public class MyCommunityDto {
         this.community_id = community.getCommunity_id();
         this.name = name;
         this.title = community.getTitle();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.date = format.format(community.getDate());
         this.hits = community.getHits();
         this.user_id = community.getUser_id();

@@ -45,7 +45,7 @@ public class CommentWriterDto {
         this.comment_id = comment.getComment_id();
         this.community_id = (int) comment.getCommunity_id();
         this.comment = comment.getComment();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.date = format.format(comment.getDate());
         this.parent = comment.getParent();
         this.user_id = comment.getUser_id();

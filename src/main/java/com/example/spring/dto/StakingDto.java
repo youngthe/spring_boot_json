@@ -41,7 +41,7 @@ public class StakingDto {
         this.wallet_address = stakingTb.getWallet_address();
         this.user_id = stakingTb.getUser_id();
         this.reward_amount = stakingTb.getReward_amount();
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         this.expire_date = format.format(stakingTb.getExpire_date()) ;
         this.created_date = format.format(stakingTb.getCreated_date());
