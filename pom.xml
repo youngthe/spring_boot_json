@@ -74,7 +74,7 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>core</artifactId>
-            <version>4.2.0</version>
+            <version>4.8.0</version>
         </dependency>
 
         <dependency>
@@ -172,6 +172,7 @@
                         </exclude>
                     </excludes>
                 </configuration>
+
             </plugin>
 
             <plugin>

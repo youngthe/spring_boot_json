@@ -28,6 +28,8 @@ public interface CommunityTbRepositoryCustom {
     public List<CommunityTb> getCommunityBylimit(int limit);
 
     public List<TestContent> getCommunityListByUserIdAndDate(int user_id);
+
+    public List<CommunityTb> getPoppularCommunityBylimit(int limit);
 }
 
 

@@ -148,7 +148,20 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         return
                 query
                         .selectFrom(qCommunityTb)
+                        .where(qCommunityTb.user_id.eq(user_id))
                         .orderBy(qCommunityTb.date.asc())
+                        .fetch();
+    }
+
+    public List<CommunityTb> getPoppularCommunityBylimit(int limit){
+
+        QCommunityTb qCommunityTb = QCommunityTb.CommunityTb;
+
+        return
+                query
+                        .selectFrom(qCommunityTb)
+                        .orderBy(qCommunityTb.get_coin.desc())
+                        .limit(limit)
                         .fetch();
     }
 

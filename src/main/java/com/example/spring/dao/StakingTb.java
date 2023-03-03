@@ -34,8 +34,6 @@ public class StakingTb {
     @Column(name = "created_date")
     private Date created_date;
 
-    @Column(name = "last_modified_date")
-    private Date last_modified_date;
 
     @Column(name = "name")
     private String name;
@@ -48,5 +46,8 @@ public class StakingTb {
 
     @Column(name = "state")
     private boolean state;
+
+    @Column(name = "block_hash")
+    private String block_hash;
 
 }

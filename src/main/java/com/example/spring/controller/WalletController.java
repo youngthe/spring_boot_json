@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.web3j.crypto.Wallet;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -47,6 +48,7 @@ public class WalletController {
 
     @Autowired
     private AskingRepository askingRepository;
+
 
     @ApiOperation(value = "지갑 추가", notes = "지갑 주소 등록하기")
     @ApiImplicitParams({
@@ -249,7 +251,8 @@ public class WalletController {
 
 
         // ex 스테이킹한 금액의 0.05센트를 1년 경과 시 지급
-        double interest_rate = 0.05;
+        // 이자 3프로
+        double interest_rate = 1.03;
 
         try{
 
@@ -270,14 +273,14 @@ public class WalletController {
 
                 Date nextThreeMonth = cal.getTime();
 
-                stakingTb.setWallet_address("");
+                stakingTb.setWallet_address("none");
                 stakingTb.setName(id);
                 stakingTb.setExpire_date(nextThreeMonth);
                 stakingTb.setCreated_date(now);
+                stakingTb.setBlock_hash("none");
                 BigDecimal number3 = BigDecimal.valueOf(coin);
-                BigDecimal number4 = new BigDecimal("1.03");
+                BigDecimal number4 = BigDecimal.valueOf(interest_rate);
                 stakingTb.setReward_amount(number3.multiply(number4).doubleValue());
-                stakingTb.setLast_modified_date(now);
                 stakingTb.setStart_amount(coin);
                 stakingTb.setPercent(3); //연 3 퍼센트 이자
                 stakingTb.setState(true);
@@ -296,6 +299,87 @@ public class WalletController {
                 result.put("resultCode", "false");
                 return result;
             }
+
+        }catch (Exception e){
+            log.info("{}", e);
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
+    }
+
+    @ApiOperation(value = "로그인 없이 스테이킹 추가", notes = "스테이킹 등록")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "coin", value = "스테이킹한 코인량", required = true),
+            @ApiImplicitParam(name = "block_hash", value = "블록 해쉬 값", required = true),
+            @ApiImplicitParam(name = "address", value = "스테이킹 한 지갑 주소", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/staking-without", method = RequestMethod.POST)
+    public HashMap staking_add2(@RequestBody HashMap<String, Object> data) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(data.get("coin"))){
+            result.put("message", "coin is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("block_hash"))){
+            result.put("message", "block_hash is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("address"))){
+            result.put("message", "address is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        double coin = Double.parseDouble(data.get("coin").toString());
+        String block_hash = data.get("block_hash").toString();
+        String address = data.get("address").toString();
+
+
+        // ex 스테이킹한 금액의 0.05센트를 1년 경과 시 지급
+        // 이자 3프로
+        double interest_rate = 1.03;
+
+        try{
+
+            StakingTb stakingTb = new StakingTb();
+            Date now = new Date();
+
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_MONTH, 365);
+
+            Date afterOneYear = cal.getTime();
+
+            stakingTb.setWallet_address(address);
+            stakingTb.setExpire_date(afterOneYear);
+            stakingTb.setCreated_date(now);
+            BigDecimal number1 = BigDecimal.valueOf(coin);
+            BigDecimal number2 = BigDecimal.valueOf(interest_rate);
+            stakingTb.setReward_amount(number1.multiply(number2).doubleValue());
+            stakingTb.setStart_amount(coin);
+            stakingTb.setPercent(3); //연 3 퍼센트 이자
+            stakingTb.setState(true);
+            stakingTb.setUser_id(0);
+            stakingTb.setBlock_hash(block_hash);
+
+            stakingRepository.save(stakingTb);
+
+            StakingDto stakingDto = new StakingDto(stakingTb);
+
+            result.put("staking", stakingDto);
+            result.put("resultCode", "true");
+            return result;
 
         }catch (Exception e){
             log.info("{}", e);

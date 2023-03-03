@@ -37,6 +37,7 @@ public class StakingTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
         return query.selectFrom(qStakingTb)
                 .where(qStakingTb.user_id.eq(user_id))
+                .where(qStakingTb.state.eq(true))
                 .fetch();
 
 

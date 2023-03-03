@@ -49,6 +49,9 @@ public class CommunityContoller {
     @Autowired
     private CoinPushHistoryRepository coinPushHistoryRepository;
 
+    @Autowired
+    private LoginHistoryRepository loginHistoryRepository;
+
 
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getSimpleName());
@@ -753,6 +756,61 @@ public class CommunityContoller {
 
     }
 
+    @ApiOperation(value = "인기 게시글", notes = "인기 게시글 조회")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "count", value = "보여줄 게시글 갯수", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/community-popularity", method = RequestMethod.GET)
+    public HashMap popularity_community(@RequestParam int count){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(ObjectUtils.isEmpty(count)){
+            result.put("message", "count is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try{
+            int like_total;
+            double total_reward;
+            String user_name;
+            int comment_total;
+
+            System.out.println("test");
+            List<CommunityTb> communityList = communityRepository.getPoppularCommunityBylimit(count);
+
+            System.out.println(communityList);
+
+            List<MyCommunityDto> communityDtoList = new ArrayList<>();
+            for(int i=0;i< communityList.size();i++){
+
+                comment_total = commentRepository.getCommentListSize(communityList.get(i).getCommunity_id());
+                like_total = likeRepository.getLikeTotal(communityList.get(i).getCommunity_id());
+                total_reward = communityList.get(i).getHits() + communityList.get(i).getGet_coin() + like_total;
+                user_name = userRepository.getNameByPk(communityList.get(i).getUser_id());
+                MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, total_reward, user_name);
+                communityDtoList.add(dto);
+
+            }
+
+            result.put("community", communityDtoList);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+            log.info("{}", e);
+            result.put("resultCode", "false");
+            result.put("message", "db error");
+            return result;
+
+        }
+
+    }
+
     @ApiOperation(value = "응원 받은 코인", notes = "응원 받은 코인")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
@@ -896,5 +954,7 @@ public class CommunityContoller {
             return result;
         }
     }
+
+
 
 }

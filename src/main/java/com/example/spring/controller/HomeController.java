@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 import java.sql.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -57,6 +58,9 @@ public class HomeController {
 
     @Autowired
     private CommentlikeRepository commentlikeRepository;
+
+    @Autowired
+    private LoginHistoryRepository loginHistoryRepository;
 
     @ApiOperation(value = "서버 동작 확인용", notes = "hello 메세지만 뿌림")
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -96,12 +100,23 @@ public class HomeController {
 
         log.info("account : {}", account);
         try {
+
             UserTb user = userRepository.getUserTbByAccount(account);
 
             String get_pw = user.getPw();
+
+
+
             if (passwordEncoder.matches(pw, get_pw)) {
                 result.put("resultCode", "true");
                 result.put("jwt", jwtTokenProvider.createToken(user));
+                LoginHistoryTb loginHistoryTb = new LoginHistoryTb();
+
+//                Date date = new Date();
+//                SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+//                System.out.println(format.format(date));
+//                loginHistoryRepository.setIncreaseCount(format.format(date));
+
                 return result;
             } else {
                 result.put("message", "not exist");
@@ -111,6 +126,29 @@ public class HomeController {
         } catch (Exception e) {
             result.put("message", "not exist");
             result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "금일 방문자", notes = "금일 로그인 한 사용자  수")
+    @RequestMapping(value = "/visit", method = RequestMethod.GET)
+    @ApiImplicitParams({
+    })
+    public HashMap visit() {
+
+        HashMap<String, Object> result = new HashMap<>();
+        try {
+
+            List<LoginHistoryTb> login_list = loginHistoryRepository.getUserHistory();
+            Date date = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+
+            int count = loginHistoryRepository.getCountByDate(format.format(date));
+            result.put("count", count);
+            return result;
+        }
+
+        catch (Exception e){
             return result;
         }
     }
@@ -194,6 +232,11 @@ public class HomeController {
         try {
             List<WalletTb> walletTb = walletRepository.getWalletByUser_id(user_id);
             UserTb userTb = userRepository.getUserTbByUserId(user_id);
+
+            Date date = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+            System.out.println(format.format(date));
+            loginHistoryRepository.setIncreaseCount(format.format(date));
 
             result.put("wallet", walletTb);
             result.put("user", userTb);

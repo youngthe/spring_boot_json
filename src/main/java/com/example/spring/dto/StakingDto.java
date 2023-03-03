@@ -45,7 +45,6 @@ public class StakingDto {
 
         this.expire_date = format.format(stakingTb.getExpire_date()) ;
         this.created_date = format.format(stakingTb.getCreated_date());
-        this.last_modified_date = format.format(stakingTb.getLast_modified_date());
         this.name = stakingTb.getName();
         this.percent = stakingTb.getPercent();
         this.start_amount = stakingTb.getStart_amount();

@@ -19,11 +19,11 @@ public class QStakingTb extends EntityPathBase<StakingTb> {
 
     public static final QStakingTb stakingTb = new QStakingTb("stakingTb");
 
+    public final StringPath block_hash = createString("block_hash");
+
     public final DateTimePath<java.util.Date> created_date = createDateTime("created_date", java.util.Date.class);
 
     public final DateTimePath<java.util.Date> expire_date = createDateTime("expire_date", java.util.Date.class);
-
-    public final DateTimePath<java.util.Date> last_modified_date = createDateTime("last_modified_date", java.util.Date.class);
 
     public final StringPath name = createString("name");
 
