@@ -301,6 +301,11 @@ public class CommunityContoller {
 
             communityRepository.Increase_like(community);
 
+            BigDecimal bigNumber1 = BigDecimal.valueOf(community.getTotal_reward());
+            BigDecimal bigNumber2 = BigDecimal.valueOf(1);
+            community.setTotal_reward(bigNumber1.add(bigNumber2).doubleValue());
+            communityRepository.save(community);
+
             CommentLikeTb commentLikeTb = new CommentLikeTb();
             commentLikeTb.setCommunity_id(community_id);
 
@@ -313,8 +318,7 @@ public class CommunityContoller {
 
             int get_likeTotal = likeRepository.getLikeTotal(community_id);
             int comment_total = commentRepository.getCommentListSize(community_id);
-            double total_reward = community.getHits() + community.getGet_coin() + get_likeTotal;
-            CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, user.getName(), likeResult, get_likeTotal, comment_total, total_reward);
+            CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, user.getName(), likeResult, get_likeTotal, comment_total);
 
             result.put("community", communityWriterDto);
             result.put("comment", commentWriterDto_list);
@@ -499,14 +503,26 @@ public class CommunityContoller {
         likeTb.setCommunity_id(community_id);
         likeTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
 
+        CommunityTb communityTb = communityRepository.getCommunityById(community_id);
         if(likeRepository.LikeCheck(likeTb)){
 
             LikeTb heart = likeRepository.getLikeByUserIdAndCommunityId(likeTb);
-            likeRepository.delete(heart);
+
+//            System.out.println("test" + heart.getLike_id());
+            likeRepository.deleteById(heart.getLike_id());
+            BigDecimal bigNumber1 = BigDecimal.valueOf(communityTb.getTotal_reward());
+            BigDecimal bigNumber2 = BigDecimal.valueOf(1);
+            communityTb.setTotal_reward(bigNumber1.subtract(bigNumber2).doubleValue());
+            communityRepository.save(communityTb);
+
             result.put("message", "unpushed");
             result.put("resultCode", "true");
-
         }else{
+
+            BigDecimal bigNumber1 = BigDecimal.valueOf(communityTb.getTotal_reward());
+            BigDecimal bigNumber2 = BigDecimal.valueOf(1);
+            communityTb.setTotal_reward(bigNumber1.add(bigNumber2).doubleValue());
+            communityRepository.save(communityTb);
             likeRepository.save(likeTb);
             result.put("message", "pushed");
             result.put("resultCode", "true");
@@ -559,6 +575,9 @@ public class CommunityContoller {
             //커뮤니티의 사용자에게 코인을 주는 로직
 
             communityTb.setGet_coin(communityTb.getGet_coin() + coin);
+            BigDecimal Number1 = BigDecimal.valueOf(communityTb.getTotal_reward());
+            BigDecimal Number2 = BigDecimal.valueOf(coin);
+            communityTb.setTotal_reward(Number1.add(Number2).doubleValue());
             communityRepository.save(communityTb);
 
             UserTb writerUser = userRepository.getUserTbByUserId(communityTb.getUser_id());

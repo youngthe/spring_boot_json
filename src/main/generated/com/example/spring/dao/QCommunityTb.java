@@ -37,6 +37,8 @@ public class QCommunityTb extends EntityPathBase<CommunityTb> {
 
     public final StringPath title = createString("title");
 
+    public final NumberPath<Double> total_reward = createNumber("total_reward", Double.class);
+
     public final NumberPath<Integer> user_id = createNumber("user_id", Integer.class);
 
     public QCommunityTb(String variable) {

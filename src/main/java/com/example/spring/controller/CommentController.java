@@ -354,7 +354,7 @@ public class CommentController {
                 int like_total = likeRepository.getLikeTotal((int) commentTbList.get(i).getCommunity_id());
                 int comment_total = commentRepository.getCommentListSize((int) commentTbList.get(i).getCommunity_id());
                 double total_reward = community.getHits() + community.getGet_coin() + like_total;
-                CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, name, likeResult, like_total, comment_total, total_reward);
+                CommunityWriterDto communityWriterDto = new CommunityWriterDto(community, name, likeResult, like_total, comment_total);
                 communityTbList.add(communityWriterDto);
                 System.out.println("test : " + my_like);
                 commentWriterDto_list.add(commentWriterDto);

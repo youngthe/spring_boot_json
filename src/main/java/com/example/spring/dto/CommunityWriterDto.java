@@ -44,7 +44,7 @@ public class CommunityWriterDto {
     int like_total;
 
     double total_reward;
-    public CommunityWriterDto(CommunityTb communityTb, String name, boolean likeResult, int like_total, int comment_total, double total_reward) {
+    public CommunityWriterDto(CommunityTb communityTb, String name, boolean likeResult, int like_total, int comment_total) {
         this.community_id = communityTb.getCommunity_id();
         this.title = communityTb.getTitle();
         this.content = communityTb.getContent();
@@ -60,7 +60,7 @@ public class CommunityWriterDto {
         this.like = likeResult;
         this.like_total = like_total;
         this.comment_total = comment_total;
-        this.total_reward = total_reward;
+        this.total_reward = communityTb.getTotal_reward();
     }
 
 }

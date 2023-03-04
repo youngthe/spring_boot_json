@@ -160,7 +160,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         return
                 query
                         .selectFrom(qCommunityTb)
-                        .orderBy(qCommunityTb.get_coin.desc())
+                        .orderBy(qCommunityTb.total_reward.desc())
                         .limit(limit)
                         .fetch();
     }

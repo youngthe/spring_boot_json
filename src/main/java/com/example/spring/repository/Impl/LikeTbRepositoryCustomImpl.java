@@ -26,8 +26,7 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
         try{
             query
                     .delete(qLikeTb)
-                    .where(qLikeTb.community_id.eq(likeTb.getCommunity_id()))
-                    .where(qLikeTb.user_id.eq(likeTb.getUser_id()))
+                    .where(qLikeTb.likes_id.eq(likeTb.getLike_id()))
                     .execute();
             return true;
         }catch (Exception e){
@@ -40,15 +39,17 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
         return query
                 .selectFrom(qLikeTb)
-                .where(qLikeTb.user_id.eq(likeTb.getLike_id()))
+                .where(qLikeTb.user_id.eq(likeTb.getUser_id()))
                 .where(qLikeTb.community_id.eq(likeTb.getCommunity_id()))
-                .fetchOne();
+                .fetchFirst();
 
     }
 
     public boolean LikeCheck(LikeTb likeTb){
         QLikeTb qLikeTb = QLikeTb.like;
 
+        System.out.println(likeTb.getCommunity_id());
+        System.out.println(likeTb.getUser_id());
         if(query
                 .selectFrom(qLikeTb)
                 .where(qLikeTb.user_id.eq(likeTb.getUser_id()))

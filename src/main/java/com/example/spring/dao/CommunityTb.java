@@ -39,6 +39,9 @@ public class CommunityTb {
     @Column(name = "comment_allow")
     private boolean comment_allow;
 
+    @Column(name = "total_reward")
+    private double total_reward;
+
 
     public int getUser_id() {
         return user_id;
@@ -119,5 +122,13 @@ public class CommunityTb {
 
     public void setComment_allow(boolean comment_allow) {
         this.comment_allow = comment_allow;
+    }
+
+    public double getTotal_reward() {
+        return total_reward;
+    }
+
+    public void setTotal_reward(double total_reward) {
+        this.total_reward = total_reward;
     }
 }

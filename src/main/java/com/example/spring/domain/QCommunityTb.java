@@ -20,6 +20,7 @@ public class QCommunityTb extends EntityPathBase<com.example.spring.dao.Communit
     public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
     public final NumberPath<Double> get_coin =  createNumber("get_coin", double.class);
     public final BooleanPath highlight = createBoolean("highlight");
+    public final NumberPath<Double> total_reward =  createNumber("total_reward", double.class);
 
     public QCommunityTb(String variable) {
 
