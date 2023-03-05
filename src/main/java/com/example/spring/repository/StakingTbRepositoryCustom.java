@@ -12,4 +12,6 @@ public interface StakingTbRepositoryCustom {
 
     public List<StakingTb> getStakingTbThatStateTrue();
 
+    public List<StakingTb> getStakingByAddress(String address);
+
 }

@@ -34,6 +34,8 @@ public class StakingTb {
     @Column(name = "created_date")
     private Date created_date;
 
+    @Column(name = "release_date")
+    private Date release_date;
 
     @Column(name = "name")
     private String name;
@@ -49,5 +51,6 @@ public class StakingTb {
 
     @Column(name = "block_hash")
     private String block_hash;
+
 
 }

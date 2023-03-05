@@ -62,6 +62,7 @@ public class ScheduleTest {
                     BigDecimal number1 = BigDecimal.valueOf(stakingTbList.get(i).getReward_amount());
 
                     stakingTbList.get(i).setState(false);
+                    stakingTbList.get(i).setRelease_date(now);
                     stakingRepository.save( stakingTbList.get(i));
 
                     Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
@@ -70,12 +71,13 @@ public class ScheduleTest {
                     BigInteger gasPrice = new BigInteger("750");
                     BigInteger GasPrice = BigInteger.valueOf(25000000000L);
                     BigInteger GasLimit = BigInteger.valueOf(30000000L);
+                    String contractAddress = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
                     EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
                     System.out.println("eth :" + ethGasPrice.getGasPrice());
                     File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
                     Credentials credentials = WalletUtils.loadCredentials("test", file);
 
-                    Abi abi = Abi.load("0xe92C60dfEc285704b8394212faf40C8CDC42997e", web3j, credentials, GasPrice, GasLimit);
+                    Abi abi = Abi.load(contractAddress, web3j, credentials, GasPrice, GasLimit);
 
                     BigInteger value = Convert.toWei(number1.toString(), Convert.Unit.ETHER).toBigInteger();
                     abi.transfer(stakingTbList.get(i).getWallet_address(), value).send();

@@ -328,50 +328,7 @@ public class HomeController {
     }
 
 
-    @ApiOperation(value = "토큰 구매", notes = "토큰 구매")
-    @RequestMapping(value = "/purchase", method = RequestMethod.POST)
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "coin", value = "구입한 토큰 값", required = true, dataType = "string"),
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode")
-    })
-    public HashMap token(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
-        HashMap<String, Object> result = new HashMap<>();
-
-
-        if (ObjectUtils.isEmpty(data.get("coin"))) {
-            result.put("message", "coin is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        double coin = Double.parseDouble(data.get("coin").toString());
-        BigDecimal num1 = BigDecimal.valueOf(coin);
-        BigDecimal num2 = new BigDecimal("105");
-        coin = num1.multiply(num2).doubleValue();
-
-        try {
-
-            UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
-
-            BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
-            BigDecimal number2 = new BigDecimal(coin);
-            user.setCoin(number1.add(number2).doubleValue());
-            userRepository.save(user);
-
-            result.put("resultCode", "true");
-            return result;
-
-
-        } catch (Exception e) {
-            log.info("{}", e);
-            result.put("message", "db error");
-            result.put("resultCode", "false");
-            return result;
-        }
-    }
 
 
 }

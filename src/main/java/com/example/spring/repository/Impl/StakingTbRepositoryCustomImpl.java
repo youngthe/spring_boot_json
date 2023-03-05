@@ -54,4 +54,13 @@ public class StakingTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
 
     }
+
+    public List<StakingTb> getStakingByAddress(String address){
+        QStakingTb qStakingTb = QStakingTb.stakingTb;
+
+        return query.selectFrom(qStakingTb)
+                .where(qStakingTb.wallet_address.eq(address))
+                .where(qStakingTb.state.eq(true))
+                .fetch();
+    }
 }

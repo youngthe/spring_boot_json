@@ -1,5 +1,6 @@
 package com.example.spring.controller;
 
+import com.example.spring.Abi;
 import com.example.spring.dao.AskingTb;
 import com.example.spring.dao.StakingTb;
 import com.example.spring.dao.UserTb;
@@ -21,9 +22,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Wallet;
+import org.web3j.crypto.WalletUtils;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.response.EthGasPrice;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.utils.Convert;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -269,7 +281,7 @@ public class WalletController {
                 Date now = new Date();
 
                 Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.DAY_OF_MONTH, 365);
+                cal.add(Calendar.DAY_OF_MONTH, 1);
 
                 Date nextThreeMonth = cal.getTime();
 
@@ -357,7 +369,7 @@ public class WalletController {
             Date now = new Date();
 
             Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, 365);
+            cal.add(Calendar.DAY_OF_MONTH, 1);
 
             Date afterOneYear = cal.getTime();
 
@@ -393,13 +405,13 @@ public class WalletController {
 
     @ApiOperation(value = "스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
+            @ApiImplicitParam(name = "staking_id", value = "스테이킹 id", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
     @RequestMapping(value = "/staking/{staking_id}", method = RequestMethod.DELETE)
-    public HashMap staking_cancel(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+    public HashMap staking_cancel(@PathVariable ("staking_id") int staking_id, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
 
@@ -409,34 +421,33 @@ public class WalletController {
             return result;
         }
 
-        if(ObjectUtils.isEmpty(data.get("staking_id"))){
-            result.put("message", "staking_id is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-        if(ObjectUtils.isEmpty(data.get("wallet_id"))){
-            result.put("message", "wallet_id is null");
-            result.put("resultCode", "false");
-            return result;
-        }
 
-        int staking_id = Integer.parseInt(data.get("staking_id").toString());
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-
-        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
         StakingTb stakingTb = stakingRepository.getStakingTbByStakingId(staking_id);
+
+        if(!stakingTb.isState()){
+            result.put("message", "already done");
+            result.put("resultCode", "false");
+            return result;
+        }
 
         UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if (jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()) {
-            double start_amount = stakingTb.getStart_amount();
             BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
             BigDecimal number2 = BigDecimal.valueOf(stakingTb.getStart_amount());
 
+            Date now = new Date();
 
             user.setCoin(number1.add(number2).doubleValue());
 
             userRepository.save(user);
-            stakingRepository.delete(stakingTb);
+            stakingTb.setRelease_date(now);
+            stakingTb.setState(false);
+            stakingRepository.save(stakingTb);
+
+            StakingDto stakingDto = new StakingDto(stakingTb);
+
+
+            result.put("staking", stakingDto);
             result.put("resultCode", "true");
 
         } else {
@@ -447,7 +458,69 @@ public class WalletController {
         return result;
     }
 
-    @ApiOperation(value = "내 스테이킹 확인", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
+    @ApiOperation(value = "비로그인 스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "address", value = "스테이킹 등록했던 주소", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/staking-without", method = RequestMethod.PATCH)
+    public HashMap staking_without_cancel(@RequestBody HashMap<String, Object> data) throws Exception {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+
+        if(ObjectUtils.isEmpty(data.get("address"))){
+            result.put("message", "address is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String address = data.get("address").toString();
+
+        List<StakingTb> stakingTb = stakingRepository.getStakingByAddress(address);
+
+        if(stakingTb.size() == 0){
+            result.put("message", "not exist");
+            result.put("resultCode", "false");
+            return result;
+        }
+        List<StakingDto> stakingDtos = new ArrayList<>();
+        for(int i=0;i<stakingTb.size();i++){
+            String toSendAddress = stakingTb.get(i).getWallet_address();
+            double start_amount = stakingTb.get(i).getStart_amount(); //시작했던 금액 전송
+            Date now = new Date();
+
+            System.out.println("web3j start");
+            Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
+
+            BigInteger GasPrice = BigInteger.valueOf(25000000000L);
+            BigInteger GasLimit = BigInteger.valueOf(30000000L);
+            String contract_address = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
+            EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
+            System.out.println("eth :" + ethGasPrice.getGasPrice());
+            File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
+            Credentials credentials = WalletUtils.loadCredentials("test", file);
+
+            Abi abi = Abi.load(contract_address, web3j, credentials, GasPrice, GasLimit);
+
+            BigInteger value = Convert.toWei(String.valueOf(start_amount), Convert.Unit.ETHER).toBigInteger();
+            abi.transfer(toSendAddress, value).send();
+
+            stakingTb.get(i).setState(false);
+            stakingTb.get(i).setRelease_date(now);
+            stakingRepository.save(stakingTb.get(i));
+            StakingDto stakingDto = new StakingDto(stakingTb.get(i));
+            stakingDtos.add(stakingDto);
+        }
+            result.put("staking", stakingDtos);
+            result.put("resultCode", "true");
+
+        return result;
+    }
+
+    @ApiOperation(value = "내 스테이킹 확인", notes = "내가 등록한 스테이킹 확인")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
@@ -465,6 +538,7 @@ public class WalletController {
         try{
             List<StakingTb> stakingTb = stakingRepository.getStakingTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
             List<StakingDto> stakingDtos = new ArrayList<>();
+
             for(int i=0;i<stakingTb.size();i++){
                 stakingTb.get(i);
                 StakingDto stakingDto = new StakingDto(stakingTb.get(i));
@@ -484,61 +558,89 @@ public class WalletController {
 
     }
 
-    @ApiOperation(value = "입금 요청", notes = "지갑에서 서버계정으로 입금 요청")
+    @ApiOperation(value = "지갑 주소로 스테이킹 확인", notes = "지갑 주소 검색으로 스테이킹 현황 확인")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "tx", value = "블록 해쉬값", required = true),
-            @ApiImplicitParam(name = "value", value = "거래량", required = true),
+            @ApiImplicitParam(name = "address", value = "지갑 주소", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/wallet/order", method = RequestMethod.POST)
-    public HashMap asking_input(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+    @RequestMapping(value = "/staking/address", method = RequestMethod.POST)
+    public HashMap staking_view_address(@RequestBody HashMap<String, Object> data) {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if (!jwtTokenProvider.validateToken(tokenHeader)) {
-            result.put("message", "Token validate");
+        if(ObjectUtils.isEmpty(data.get("address"))){
+            result.put("message", "address is null");
             result.put("resultCode", "false");
             return result;
         }
 
-        if(ObjectUtils.isEmpty(data.get("tx"))){
-            result.put("message", "tx is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        if(ObjectUtils.isEmpty(data.get("value"))){
-            result.put("message", "value is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        String tx = data.get("tx").toString();
-        double amount = Double.parseDouble(data.get("value").toString());
-
-
-        if(ObjectUtils.isEmpty(data.get("wallet_id"))){
-            result.put("message", "wallet_id is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
+        String address = data.get("address").toString();
 
         try{
-            AskingTb askingTb = new AskingTb();
-            askingTb.setCreated_date(LocalDate.now());
-            askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-            askingTb.setAmount(amount);
-            //출금 요청 false, 입금 요청 true
-            askingTb.setInput_output(true);
-            //state 요청 실행 전 false, 실행 후 true
-            askingTb.setStatus(false);
-            askingRepository.save(askingTb);
+            List<StakingTb> stakingTb = stakingRepository.getStakingByAddress(address);
+            List<StakingDto> stakingDtos = new ArrayList<>();
+
+            for(int i=0;i<stakingTb.size();i++){
+                stakingTb.get(i);
+                StakingDto stakingDto = new StakingDto(stakingTb.get(i));
+                stakingDtos.add(stakingDto);
+            }
+
+            result.put("staking", stakingDtos);
             result.put("resultCode", "true");
             return result;
         }catch(Exception e){
+            log.info("{}", e);
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+
+    }
+
+    @ApiOperation(value = "토큰 구매", notes = "토큰 구매")
+    @RequestMapping(value = "/purchase", method = RequestMethod.POST)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "coin", value = "구입한 토큰 값", required = true, dataType = "string"),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    public HashMap token(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+
+        if (ObjectUtils.isEmpty(data.get("coin"))) {
+            result.put("message", "coin is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        double coin = Double.parseDouble(data.get("coin").toString());
+        BigDecimal num1 = BigDecimal.valueOf(coin);
+        BigDecimal num2 = new BigDecimal("2");
+        coin = num1.multiply(num2).doubleValue();
+
+        try {
+
+            UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+            BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
+            BigDecimal number2 = new BigDecimal(coin);
+            user.setCoin(number1.add(number2).doubleValue());
+            userRepository.save(user);
+
+            result.put("resultCode", "true");
+            return result;
+
+
+        } catch (Exception e) {
+            log.info("{}", e);
+            result.put("message", "db error");
             result.put("resultCode", "false");
             return result;
         }

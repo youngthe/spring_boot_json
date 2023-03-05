@@ -29,6 +29,8 @@ public class QStakingTb extends EntityPathBase<StakingTb> {
 
     public final NumberPath<Double> percent = createNumber("percent", Double.class);
 
+    public final DateTimePath<java.util.Date> release_date = createDateTime("release_date", java.util.Date.class);
+
     public final NumberPath<Double> reward_amount = createNumber("reward_amount", Double.class);
 
     public final NumberPath<Integer> staking_id = createNumber("staking_id", Integer.class);
