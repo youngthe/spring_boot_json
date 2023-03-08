@@ -1,7 +1,10 @@
 package com.example.spring;
 
 import com.example.spring.dao.LoginHistoryTb;
+import com.example.spring.dao.StakingTb;
 import com.example.spring.repository.LoginHistoryRepository;
+import com.example.spring.repository.StakingRepository;
+import com.sun.jna.platform.win32.Sspi;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,19 +22,23 @@ import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.utils.Convert;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 
 @SpringBootTest
 class ApplicationTests {
 
 
-//    @Autowired
-//    AskingRepository askingRepository;
-//
-//    @Autowired
-//    CommunityRepository communityRepository;
+    @Autowired
+    StakingRepository stakingRepository;
 //
 //    @Autowired
 //    PasswordEncoder passwordEncoder;
@@ -70,48 +77,67 @@ class ApplicationTests {
 //        System.out.println(web3ClientVersion.getWeb3ClientVersion());
 //    }
 
-    @Test
-    public void getEthClientVersionASync() throws Exception {
-        Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
+//    @Test
+//    public void getEthClientVersionASync() throws Exception {
+//        Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
+////
+//        ContractGasProvider gasProvider = new DefaultGasProvider();
+//        BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
+//        BigInteger GasLimit = BigInteger.valueOf(300000L);
+//        EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
+//        File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
+//        Credentials credentials = WalletUtils.loadCredentials("test", file);
+//        System.out.println(credentials.getAddress());
 //
-        ContractGasProvider gasProvider = new DefaultGasProvider();
-        BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
-        BigInteger GasLimit = BigInteger.valueOf(300000L);
-        EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
-        File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
-        Credentials credentials = WalletUtils.loadCredentials("test", file);
-        System.out.println(credentials.getAddress());
-
-        Abi abi = Abi.load("0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5", web3j, credentials, gasPrice, GasLimit);
-//        Abi abi1 = Abi.load("0xe92C60dfEc285704b8394212faf40C8CDC42997e", web3j, credentials, gasProvider);
-        BigInteger value = Convert.toWei("5", Convert.Unit.ETHER).toBigInteger();
-        BigInteger balances = Convert.fromWei(abi._balances(credentials.getAddress()).send().toString(), Convert.Unit.ETHER).toBigInteger();
-//        abi.transfer("0x1de5e7CEF591A57C9f9Ed263A320563c5726A056", value).send();
-        System.out.println(balances);
-
-
-    }
+//        Abi abi = Abi.load("0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5", web3j, credentials, gasPrice, GasLimit);
+////        Abi abi1 = Abi.load("0xe92C60dfEc285704b8394212faf40C8CDC42997e", web3j, credentials, gasProvider);
+//        BigInteger value = Convert.toWei("5", Convert.Unit.ETHER).toBigInteger();
+//        BigInteger balances = Convert.fromWei(abi._balances(credentials.getAddress()).send().toString(), Convert.Unit.ETHER).toBigInteger();
+////        abi.transfer("0x1de5e7CEF591A57C9f9Ed263A320563c5726A056", value).send();
+//        System.out.println(balances);
+//
+//
+//    }
     @Autowired
     LoginHistoryRepository loginHistoryRepository;
     @Test
     public void test(){
-            Date date = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-            System.out.println(format.format(date));
 
-//            LoginHistoryTb loginHistoryTb = new LoginHistoryTb();
-//            loginHistoryTb.setDate(format.format(date));
-//            loginHistoryTb.setCount(0);
-//            loginHistoryRepository.save(loginHistoryTb);
+//        List<StakingTb> stakingTbList = stakingRepository.getStakingTbThatStateTrue();
+//
+//        for(int i=0;i<stakingTbList.size();i++){
+//            BigDecimal number1 = BigDecimal.valueOf(stakingTbList.get(i).getStart_amount());
+//            BigDecimal number2 = new BigDecimal("0.1");
+//            stakingTbList.get(i).setAdd_amount(number1.multiply(number2).doubleValue());
+//            stakingRepository.save(stakingTbList.get(i));
+//        }
+//        Date now_date = new Date();
+//        Timestamp timeStamp = new Timestamp(now_date.getTime());
 
-        int count = loginHistoryRepository.getCountByDate(format.format(date));
+//        LocalDate test = LocalDate.now();
+//        test = test.plusDays(90);
+//        String format_year = test.format(DateTimeFormatter.ofPattern("yyyy"));
+//        String format_month = test.format(DateTimeFormatter.ofPattern("MM"));
+//        String format_day = test.format(DateTimeFormatter.ofPattern("dd"));
+//
+//        int year = Integer.parseInt(format_year);
+//        int month = Integer.parseInt(format_month);
+//        int day = Integer.parseInt(format_day);
+//        System.out.println(year + " " + month + " " + day);
+//         LocalDate localDate = LocalDate.of(year, month, day);
+//         Date date = new Date();
+//        System.out.println(test);
+//        System.out.println(localDate);
+//
+//        System.out.println();
 
-        System.out.println(count);
-
-        loginHistoryRepository.setIncreaseCount(format.format(date));
-
-
-
+//        LocalDate test = LocalDate.now();
+//        Calendar cal = Calendar.getInstance();
+//        cal.set(test.getYear(), test.getMonth().getValue()+3, test.getDayOfMonth(), 0, 0, 0);
+//
+//        Date nextThreeMonth = cal.getTime();
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        System.out.println(format.format(nextThreeMonth));
         }
 
 }

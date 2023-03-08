@@ -22,7 +22,7 @@ public class UserTb {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int user_id;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 50, nullable = false)
     private String account;
 
     @Column(length = 200, nullable = false)

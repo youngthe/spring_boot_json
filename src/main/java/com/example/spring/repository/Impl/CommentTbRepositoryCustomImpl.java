@@ -1,7 +1,7 @@
 package com.example.spring.repository.Impl;
 
 import com.example.spring.dao.CommentTb;
-import com.example.spring.domain.QCommentTb;
+import com.example.spring.dao.QCommentTb;
 import com.example.spring.repository.CommentTbRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
     @Override
     public List<CommentTb> getCommentList(int Community_id){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query
                 .selectFrom(qCommentTb)
@@ -39,7 +39,7 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
     public int getCommentListSize(int Community_id){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query
                 .selectFrom(qCommentTb)
@@ -50,7 +50,7 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
     public List<CommentTb> getRecommentByCommentId(int parent){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query
                 .selectFrom(qCommentTb)
@@ -61,22 +61,22 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
 
 
     public CommentTb getCommentByCommentId(int commentId){
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query
                 .selectFrom(qCommentTb)
-                .where(qCommentTb.id.eq(commentId))
+                .where(qCommentTb.comment_id.eq(commentId))
                 .fetchOne();
 
     }
     @Override
     public int getCommunityIdByCommentId(int CommentId){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return (int) query
                 .selectFrom(qCommentTb)
-                .where(qCommentTb.id.eq(CommentId))
+                .where(qCommentTb.comment_id.eq(CommentId))
                 .fetch().get(0).getCommunity_id();
 
     }
@@ -86,7 +86,7 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
     @Transactional
     public void deleteByCommunityId(int community_id){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         query
                 .delete(qCommentTb)
@@ -98,7 +98,7 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
     @Transactional
     public void deleteByParent(int parent_id){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         query
                 .delete(qCommentTb)
@@ -110,33 +110,33 @@ public class CommentTbRepositoryCustomImpl extends QuerydslRepositorySupport imp
     @Transactional
     public void deleteComment(int comment_id){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         query
                 .delete(qCommentTb)
-                .where(qCommentTb.id.eq(comment_id))
+                .where(qCommentTb.comment_id.eq(comment_id))
                 .execute();
     }
 
     public List<CommentTb> getCommentByCommunityId(int community_id){
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query.selectFrom(qCommentTb).where(qCommentTb.community_id.eq(community_id)).fetch();
     }
 
     public List<CommentTb> getCommentByUserId(int user_id){
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query
                 .selectFrom(qCommentTb)
                 .where(qCommentTb.user_id.eq(user_id))
-                .orderBy(qCommentTb.id.desc())
+                .orderBy(qCommentTb.comment_id.desc())
                 .fetch();
     }
 
     public List<CommentTb> getCommentListDistinct(int user_id){
 
-        QCommentTb qCommentTb = QCommentTb.comments;
+        QCommentTb qCommentTb = QCommentTb.commentTb;
 
         return query
                 .selectFrom(qCommentTb)

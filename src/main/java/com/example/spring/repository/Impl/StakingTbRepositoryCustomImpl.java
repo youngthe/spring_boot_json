@@ -1,8 +1,8 @@
 package com.example.spring.repository.Impl;
 
 
+import com.example.spring.dao.QStakingTb;
 import com.example.spring.dao.StakingTb;
-import com.example.spring.domain.QStakingTb;
 import com.example.spring.repository.StakingTbRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;

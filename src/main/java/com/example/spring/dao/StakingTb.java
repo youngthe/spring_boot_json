@@ -46,6 +46,9 @@ public class StakingTb {
     @Column(name = "start_amount")
     private double start_amount;
 
+    @Column(name = "add_amount")
+    private double add_amount;
+
     @Column(name = "state")
     private boolean state;
 

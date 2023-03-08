@@ -1,7 +1,7 @@
 package com.example.spring.repository.Impl;
 
+import com.example.spring.dao.QUserTb;
 import com.example.spring.dao.UserTb;
-import com.example.spring.domain.QUserTb;
 import com.example.spring.repository.UserTbRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public boolean LoginCheck(UserTb userTb){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         if(query.selectFrom(qusertb)
                 .where(qusertb.account.eq(userTb.getAccount()))
@@ -34,7 +34,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public boolean AccountCheck(String account){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         if(query.selectFrom(qusertb)
                 .where(qusertb.account.eq(account))
@@ -49,7 +49,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public UserTb getUserTbByAccount(String account){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         return query
                 .selectFrom(qusertb)
@@ -60,7 +60,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public UserTb getUserTbByUserId(int user_id){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         return query
                 .selectFrom(qusertb)
@@ -71,7 +71,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public String getNameByAccount(String account){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         return query
                 .selectFrom(qusertb)
@@ -82,7 +82,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public String getNameByPk(int id){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         return query.selectFrom(qusertb)
                 .where(qusertb.user_id.eq(id))
@@ -92,7 +92,7 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
 
     public String getRoleByUserId(int user_id){
 
-        QUserTb qusertb = QUserTb.user;
+        QUserTb qusertb = QUserTb.userTb;
 
         return query.selectFrom(qusertb)
                 .where(qusertb.user_id.eq(user_id))

@@ -19,6 +19,8 @@ public class QStakingTb extends EntityPathBase<StakingTb> {
 
     public static final QStakingTb stakingTb = new QStakingTb("stakingTb");
 
+    public final NumberPath<Double> add_amount = createNumber("add_amount", Double.class);
+
     public final StringPath block_hash = createString("block_hash");
 
     public final DateTimePath<java.util.Date> created_date = createDateTime("created_date", java.util.Date.class);

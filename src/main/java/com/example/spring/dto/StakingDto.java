@@ -28,6 +28,7 @@ public class StakingDto {
 
     private String created_date;
 
+
     private String name;
 
     private double percent;
@@ -36,6 +37,7 @@ public class StakingDto {
 
     private String release_date;
 
+    private double add_amount;
 
     public StakingDto(StakingTb stakingTb) {
         this.staking_id = stakingTb.getStaking_id();
@@ -52,5 +54,6 @@ public class StakingDto {
         if(!ObjectUtils.isEmpty(stakingTb.getRelease_date())){
             this.release_date = format.format(stakingTb.getRelease_date());
         }
+        this.add_amount = stakingTb.getAdd_amount();
     }
 }

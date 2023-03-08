@@ -1,6 +1,5 @@
 package com.example.spring.domain;
 
-import com.example.spring.dao.CommunityTb;
 import com.example.spring.dao.TestContent;
 import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.EntityPathBase;

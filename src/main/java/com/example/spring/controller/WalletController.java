@@ -280,8 +280,9 @@ public class WalletController {
                 StakingTb stakingTb = new StakingTb();
                 Date now = new Date();
 
+                LocalDate test = LocalDate.now();
                 Calendar cal = Calendar.getInstance();
-                cal.add(Calendar.DAY_OF_MONTH, 1);
+                cal.set(test.getYear(), test.getMonth().getValue()+3, test.getDayOfMonth(), 0, 0, 0);
 
                 Date nextThreeMonth = cal.getTime();
 
@@ -297,6 +298,7 @@ public class WalletController {
                 stakingTb.setPercent(3); //연 3 퍼센트 이자
                 stakingTb.setState(true);
                 stakingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                stakingTb.setAdd_amount(0L);
 
                 stakingRepository.save(stakingTb);
 
@@ -434,7 +436,8 @@ public class WalletController {
         if (jwtTokenProvider.getUserId(tokenHeader) == stakingTb.getUser_id()) {
             BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
             BigDecimal number2 = BigDecimal.valueOf(stakingTb.getStart_amount());
-
+            BigDecimal number3 = BigDecimal.valueOf(stakingTb.getAdd_amount());
+            number2 = number2.add(number3);
             Date now = new Date();
 
             user.setCoin(number1.add(number2).doubleValue());
@@ -489,13 +492,19 @@ public class WalletController {
         List<StakingDto> stakingDtos = new ArrayList<>();
         for(int i=0;i<stakingTb.size();i++){
             String toSendAddress = stakingTb.get(i).getWallet_address();
-            double start_amount = stakingTb.get(i).getStart_amount(); //시작했던 금액 전송
+            double start_amount = stakingTb.get(i).getStart_amount();
+            double add_amount = stakingTb.get(i).getAdd_amount();
+            BigDecimal decimal_start_amount = BigDecimal.valueOf(start_amount);
+            BigDecimal decimal_add_amount = BigDecimal.valueOf(add_amount);
+            double send_amount = decimal_start_amount.add(decimal_add_amount).doubleValue();
+
+
             Date now = new Date();
 
             System.out.println("web3j start");
             Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
 
-            BigInteger GasPrice = BigInteger.valueOf(25000000000L);
+            BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
             BigInteger GasLimit = BigInteger.valueOf(30000000L);
             String contract_address = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
             EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
@@ -503,9 +512,9 @@ public class WalletController {
             File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
             Credentials credentials = WalletUtils.loadCredentials("test", file);
 
-            Abi abi = Abi.load(contract_address, web3j, credentials, GasPrice, GasLimit);
+            Abi abi = Abi.load(contract_address, web3j, credentials, gasPrice, GasLimit);
 
-            BigInteger value = Convert.toWei(String.valueOf(start_amount), Convert.Unit.ETHER).toBigInteger();
+            BigInteger value = Convert.toWei(String.valueOf(send_amount), Convert.Unit.ETHER).toBigInteger();
             abi.transfer(toSendAddress, value).send();
 
             stakingTb.get(i).setState(false);

@@ -1,7 +1,7 @@
 package com.example.spring.repository.Impl;
 
 import com.example.spring.dao.AskingTb;
-import com.example.spring.domain.QAskingTb;
+import com.example.spring.dao.QAskingTb;
 import com.example.spring.repository.AskingTbRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class AskingTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
 
     public AskingTb getAskingTbByAskingId(int asking_id){
 
-        QAskingTb qAskingTb = QAskingTb.asking;
+        QAskingTb qAskingTb = QAskingTb.askingTb;
 
         return query
                 .selectFrom(qAskingTb)

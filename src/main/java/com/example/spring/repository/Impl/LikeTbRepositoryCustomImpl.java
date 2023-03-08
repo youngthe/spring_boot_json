@@ -1,7 +1,7 @@
 package com.example.spring.repository.Impl;
 
 import com.example.spring.dao.LikeTb;
-import com.example.spring.domain.QLikeTb;
+import com.example.spring.dao.QLikeTb;
 import com.example.spring.repository.LikeTbRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
     @Transactional
     public boolean deleteByCommunityIdAndWriterId(LikeTb likeTb){
 
-        QLikeTb qLikeTb = QLikeTb.like;
+        QLikeTb qLikeTb = QLikeTb.likeTb;
 
         try{
             query
@@ -35,7 +35,7 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
     }
 
     public LikeTb getLikeByUserIdAndCommunityId(LikeTb likeTb){
-        QLikeTb qLikeTb = QLikeTb.like;
+        QLikeTb qLikeTb = QLikeTb.likeTb;
 
         return query
                 .selectFrom(qLikeTb)
@@ -46,7 +46,7 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
     }
 
     public boolean LikeCheck(LikeTb likeTb){
-        QLikeTb qLikeTb = QLikeTb.like;
+        QLikeTb qLikeTb = QLikeTb.likeTb;
 
         System.out.println(likeTb.getCommunity_id());
         System.out.println(likeTb.getUser_id());
@@ -62,7 +62,7 @@ public class LikeTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
     }
 
     public int getLikeTotal(int community_id){
-        QLikeTb qLikeTb = QLikeTb.like;
+        QLikeTb qLikeTb = QLikeTb.likeTb;
 
         return query
                 .selectFrom(qLikeTb)

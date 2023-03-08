@@ -1,11 +1,7 @@
 package com.example.spring.repository.Impl;
 
 import com.example.spring.dao.CommentLikeTb;
-import com.example.spring.dao.CommentTb;
-import com.example.spring.dao.LikeTb;
-import com.example.spring.domain.QCommentLikeTb;
-import com.example.spring.domain.QLikeTb;
-import com.example.spring.repository.CommentTbRepositoryCustom;
+import com.example.spring.dao.QCommentLikeTb;
 import com.example.spring.repository.CommentlikeRepositoryCustom;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +20,7 @@ public class CommentlikeRepositoryCustomImpl extends QuerydslRepositorySupport i
 
     public boolean CommentLikeCheckByAll(CommentLikeTb commentLikeTb){
 
-        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.qCommentLikeTb;
+        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.commentLikeTb;
 
         if(query
                 .selectFrom(qCommentLikeTb)
@@ -40,7 +36,7 @@ public class CommentlikeRepositoryCustomImpl extends QuerydslRepositorySupport i
 
     public CommentLikeTb getCommentLike(CommentLikeTb commentLikeTb){
 
-        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.qCommentLikeTb;
+        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.commentLikeTb;
 
         return query
                 .selectFrom(qCommentLikeTb)
@@ -51,7 +47,7 @@ public class CommentlikeRepositoryCustomImpl extends QuerydslRepositorySupport i
     }
 
     public List<CommentLikeTb> getCommentLikeListByCommentLikeTb(CommentLikeTb commentLikeTb){
-        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.qCommentLikeTb;
+        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.commentLikeTb;
 
         return query
                 .selectFrom(qCommentLikeTb)
@@ -63,7 +59,7 @@ public class CommentlikeRepositoryCustomImpl extends QuerydslRepositorySupport i
 
     public int getCommentLike_total(int comment_id){
 
-        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.qCommentLikeTb;
+        QCommentLikeTb qCommentLikeTb = QCommentLikeTb.commentLikeTb;
 
         return query
                 .selectFrom(qCommentLikeTb)

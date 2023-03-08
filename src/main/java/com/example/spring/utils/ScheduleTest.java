@@ -68,8 +68,7 @@ public class ScheduleTest {
                     Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
 
                     ContractGasProvider gasProvider = new DefaultGasProvider();
-                    BigInteger gasPrice = new BigInteger("750");
-                    BigInteger GasPrice = BigInteger.valueOf(25000000000L);
+                    BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
                     BigInteger GasLimit = BigInteger.valueOf(30000000L);
                     String contractAddress = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
                     EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
@@ -77,7 +76,7 @@ public class ScheduleTest {
                     File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
                     Credentials credentials = WalletUtils.loadCredentials("test", file);
 
-                    Abi abi = Abi.load(contractAddress, web3j, credentials, GasPrice, GasLimit);
+                    Abi abi = Abi.load(contractAddress, web3j, credentials, gasPrice, GasLimit);
 
                     BigInteger value = Convert.toWei(number1.toString(), Convert.Unit.ETHER).toBigInteger();
                     abi.transfer(stakingTbList.get(i).getWallet_address(), value).send();
@@ -102,6 +101,7 @@ public class ScheduleTest {
 
     }
     //초 분 시 일 월 년
+    //00시마다 작동하는 스케쥴러
     @Scheduled(cron = "0 0 0 * * ?")
     public void TimeScaduler() throws Exception {
         Date date = new Date();
@@ -112,6 +112,15 @@ public class ScheduleTest {
             loginHistoryTb.setDate(format.format(date));
             loginHistoryTb.setCount(0);
             loginHistoryRepository.save(loginHistoryTb);
+
+            List<StakingTb> stakingTbList = stakingRepository.getStakingTbThatStateTrue();
+
+            for(int i=0;i<stakingTbList.size();i++){
+                BigDecimal number1 = BigDecimal.valueOf(stakingTbList.get(i).getStart_amount());
+                BigDecimal number2 = new BigDecimal("0.1");
+                stakingTbList.get(i).setAdd_amount(number1.multiply(number2).doubleValue());
+                stakingRepository.save(stakingTbList.get(i));
+            }
 
     }
 

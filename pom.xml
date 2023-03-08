@@ -185,7 +185,7 @@
                             <goal>process</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>src/main/generated</outputDirectory>
+                            <outputDirectory>src/main/java/qtable</outputDirectory>
                             <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
                         </configuration>
                     </execution>
