@@ -1,7 +1,6 @@
 package com.example.spring.repository;
 
 import com.example.spring.dao.CommentLikeTb;
-import com.example.spring.dao.CommentTb;
 
 import java.util.List;
 

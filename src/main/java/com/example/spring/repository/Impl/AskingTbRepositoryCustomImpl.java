@@ -7,6 +7,9 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 public class AskingTbRepositoryCustomImpl extends QuerydslRepositorySupport implements AskingTbRepositoryCustom {
 
     @Autowired
@@ -16,7 +19,13 @@ public class AskingTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
         super(AskingTb.class);
     }
 
+    @Override
+    @PersistenceContext
+    public void setEntityManager(EntityManager entityManager) {
 
+        super.setEntityManager(entityManager);
+
+    }
 
     public AskingTb getAskingTbByAskingId(int asking_id){
 

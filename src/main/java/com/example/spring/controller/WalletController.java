@@ -1,15 +1,9 @@
 package com.example.spring.controller;
 
 import com.example.spring.Abi;
-import com.example.spring.dao.AskingTb;
-import com.example.spring.dao.StakingTb;
-import com.example.spring.dao.UserTb;
-import com.example.spring.dao.WalletTb;
+import com.example.spring.dao.*;
 import com.example.spring.dto.StakingDto;
-import com.example.spring.repository.AskingRepository;
-import com.example.spring.repository.StakingRepository;
-import com.example.spring.repository.UserRepository;
-import com.example.spring.repository.WalletRepository;
+import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -23,17 +17,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.web3j.crypto.Credentials;
-import org.web3j.crypto.Wallet;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthGasPrice;
 import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.gas.ContractGasProvider;
-import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -60,6 +50,9 @@ public class WalletController {
 
     @Autowired
     private AskingRepository askingRepository;
+
+    @Autowired
+    private InOutHistoryRepository inOutHistoryRepository;
 
 
     @ApiOperation(value = "지갑 추가", notes = "지갑 주소 등록하기")
@@ -643,6 +636,8 @@ public class WalletController {
             user.setCoin(number1.add(number2).doubleValue());
             userRepository.save(user);
 
+
+
             result.put("resultCode", "true");
             return result;
 
@@ -689,26 +684,60 @@ public class WalletController {
         double amount = Double.parseDouble(data.get("amount").toString());
         int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
 
+        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
 
-        try{
-            AskingTb askingTb = new AskingTb();
-            askingTb.setCreated_date(LocalDate.now());
-            askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-            askingTb.setAmount(amount);
-            //출금 요청 false, 입금 요청 true
-            askingTb.setInput_output(false);
-            //state 요청 실행 전 false, 실행 후 true
-            askingTb.setStatus(false);
-            askingRepository.save(askingTb);
-            result.put("resultCode", "true");
-            return result;
-        }catch(Exception e){
+        UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+        double user_coin = userTb.getCoin();
+
+        if(user_coin >= amount){
+
+            try{
+                AskingTb askingTb = new AskingTb();
+                askingTb.setCreated_date(LocalDate.now());
+                askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                askingTb.setAmount(amount);
+                //출금 요청 false, 입금 요청 true
+                askingTb.setInput_output(false);
+                //state 요청 실행 전 false, 실행 후 true
+                askingTb.setStatus(false);
+                askingRepository.save(askingTb);
+
+                InOutHistoryTb inOutHistoryTb = new InOutHistoryTb();
+                inOutHistoryTb.setIn_out(false);
+                inOutHistoryTb.setAccount(walletTb.getAddress());
+                inOutHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                inOutHistoryRepository.save(inOutHistoryTb);
+
+
+                Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
+
+                BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
+                BigInteger GasLimit = BigInteger.valueOf(20000000L);
+                String contractAddress = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
+                File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
+                Credentials credentials = WalletUtils.loadCredentials("test", file);
+
+                Abi abi = Abi.load(contractAddress, web3j, credentials, gasPrice, GasLimit);
+
+                BigInteger value = Convert.toWei(String.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
+                abi.transfer(walletTb.getAddress(), value).send();
+
+
+                result.put("resultCode", "true");
+                return result;
+            }catch(Exception e){
+                result.put("resultCode", "false");
+                return result;
+            }
+
+        }else{
+            result.put("message", "coin less");
             result.put("resultCode", "false");
             return result;
+
         }
 
     }
-
-
 
 }

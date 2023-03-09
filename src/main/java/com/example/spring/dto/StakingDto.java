@@ -5,12 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.util.ObjectUtils;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Getter
 @Setter

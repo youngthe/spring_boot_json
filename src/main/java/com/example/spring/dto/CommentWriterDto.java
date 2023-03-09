@@ -4,9 +4,7 @@ import com.example.spring.dao.CommentTb;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 @Getter

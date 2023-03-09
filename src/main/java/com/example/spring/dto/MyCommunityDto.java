@@ -1,7 +1,6 @@
 package com.example.spring.dto;
 
 import com.example.spring.dao.CommunityTb;
-import com.example.spring.dao.TestContent;
 import lombok.Getter;
 import lombok.Setter;
 

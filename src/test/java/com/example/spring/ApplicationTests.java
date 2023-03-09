@@ -1,37 +1,10 @@
 package com.example.spring;
 
-import com.example.spring.dao.LoginHistoryTb;
-import com.example.spring.dao.StakingTb;
 import com.example.spring.repository.LoginHistoryRepository;
 import com.example.spring.repository.StakingRepository;
-import com.sun.jna.platform.win32.Sspi;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.web3j.crypto.*;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.EthGasPrice;
-import org.web3j.protocol.http.HttpService;
-import org.web3j.tx.Contract;
-import org.web3j.tx.FastRawTransactionManager;
-import org.web3j.tx.gas.ContractGasProvider;
-import org.web3j.tx.gas.DefaultGasProvider;
-import org.web3j.tx.gas.StaticGasProvider;
-import org.web3j.tx.response.PollingTransactionReceiptProcessor;
-import org.web3j.utils.Convert;
-
-import java.io.File;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
 
 @SpringBootTest
 class ApplicationTests {

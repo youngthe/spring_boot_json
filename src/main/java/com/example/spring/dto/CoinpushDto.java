@@ -4,12 +4,7 @@ import com.example.spring.dao.CoinPushHistoryTb;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Getter
 @Setter

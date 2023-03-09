@@ -24,5 +24,8 @@ public class InOutHistoryTb {
     @Column(name = "coin")
     private double coin;
 
+    @Column(name = "account")
+    private String account;
+
 
 }

@@ -1,6 +1,5 @@
 package com.example.spring.repository;
 
-import com.example.spring.dao.CategoryTb;
 import com.example.spring.dao.CoinPushHistoryTb;
 import org.springframework.data.jpa.repository.JpaRepository;
 

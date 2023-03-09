@@ -1,14 +1,10 @@
 package com.example.spring.dto;
 
 import com.example.spring.dao.CommunityTb;
-import com.example.spring.dao.TestContent;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.Date;
 
 
 @Getter

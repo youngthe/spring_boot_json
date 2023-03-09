@@ -1,16 +1,10 @@
 package com.example.spring.dao;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.querydsl.core.types.EntityPath;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Columns;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
