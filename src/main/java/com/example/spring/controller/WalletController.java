@@ -317,86 +317,6 @@ public class WalletController {
 
     }
 
-    @ApiOperation(value = "로그인 없이 스테이킹 추가", notes = "스테이킹 등록")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "coin", value = "스테이킹한 코인량", required = true),
-            @ApiImplicitParam(name = "block_hash", value = "블록 해쉬 값", required = true),
-            @ApiImplicitParam(name = "address", value = "스테이킹 한 지갑 주소", required = true),
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode")
-    })
-    @RequestMapping(value = "/staking-without", method = RequestMethod.POST)
-    public HashMap staking_add2(@RequestBody HashMap<String, Object> data) {
-
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(ObjectUtils.isEmpty(data.get("coin"))){
-            result.put("message", "coin is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        if(ObjectUtils.isEmpty(data.get("block_hash"))){
-            result.put("message", "block_hash is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        if(ObjectUtils.isEmpty(data.get("address"))){
-            result.put("message", "address is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        double coin = Double.parseDouble(data.get("coin").toString());
-        String block_hash = data.get("block_hash").toString();
-        String address = data.get("address").toString();
-
-
-        // ex 스테이킹한 금액의 0.05센트를 1년 경과 시 지급
-        // 이자 3프로
-        double interest_rate = 1.03;
-
-        try{
-
-            StakingTb stakingTb = new StakingTb();
-            Date now = new Date();
-
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DAY_OF_MONTH, 1);
-
-            Date afterOneYear = cal.getTime();
-
-            stakingTb.setWallet_address(address);
-            stakingTb.setExpire_date(afterOneYear);
-            stakingTb.setCreated_date(now);
-            BigDecimal number1 = BigDecimal.valueOf(coin);
-            BigDecimal number2 = BigDecimal.valueOf(interest_rate);
-            stakingTb.setReward_amount(number1.multiply(number2).doubleValue());
-            stakingTb.setStart_amount(coin);
-            stakingTb.setPercent(3); //연 3 퍼센트 이자
-            stakingTb.setState(true);
-            stakingTb.setUser_id(0);
-            stakingTb.setBlock_hash(block_hash);
-
-            stakingRepository.save(stakingTb);
-
-            StakingDto stakingDto = new StakingDto(stakingTb);
-
-            result.put("staking", stakingDto);
-            result.put("resultCode", "true");
-            return result;
-
-        }catch (Exception e){
-            log.info("{}", e);
-            result.put("message", "db error");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-
-    }
 
     @ApiOperation(value = "스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
     @ApiImplicitParams({
@@ -454,73 +374,6 @@ public class WalletController {
         return result;
     }
 
-    @ApiOperation(value = "비로그인 스테이킹 취소", notes = "등록했던 스테이킹 취소하고 취소된 금액을 받을 지갑")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "address", value = "스테이킹 등록했던 주소", required = true),
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode")
-    })
-    @RequestMapping(value = "/staking-without", method = RequestMethod.PATCH)
-    public HashMap staking_without_cancel(@RequestBody HashMap<String, Object> data) throws Exception {
-
-        HashMap<String, Object> result = new HashMap<>();
-
-
-        if(ObjectUtils.isEmpty(data.get("address"))){
-            result.put("message", "address is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        String address = data.get("address").toString();
-
-        List<StakingTb> stakingTb = stakingRepository.getStakingByAddress(address);
-
-        if(stakingTb.size() == 0){
-            result.put("message", "not exist");
-            result.put("resultCode", "false");
-            return result;
-        }
-        List<StakingDto> stakingDtos = new ArrayList<>();
-        for(int i=0;i<stakingTb.size();i++){
-            String toSendAddress = stakingTb.get(i).getWallet_address();
-            double start_amount = stakingTb.get(i).getStart_amount();
-            double add_amount = stakingTb.get(i).getAdd_amount();
-            BigDecimal decimal_start_amount = BigDecimal.valueOf(start_amount);
-            BigDecimal decimal_add_amount = BigDecimal.valueOf(add_amount);
-            double send_amount = decimal_start_amount.add(decimal_add_amount).doubleValue();
-
-
-            Date now = new Date();
-
-            System.out.println("web3j start");
-            Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
-
-            BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
-            BigInteger GasLimit = BigInteger.valueOf(30000000L);
-            String contract_address = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
-            EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
-            System.out.println("eth :" + ethGasPrice.getGasPrice());
-            File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
-            Credentials credentials = WalletUtils.loadCredentials("test", file);
-
-            Abi abi = Abi.load(contract_address, web3j, credentials, gasPrice, GasLimit);
-
-            BigInteger value = Convert.toWei(String.valueOf(send_amount), Convert.Unit.ETHER).toBigInteger();
-            abi.transfer(toSendAddress, value).send();
-
-            stakingTb.get(i).setState(false);
-            stakingTb.get(i).setRelease_date(now);
-            stakingRepository.save(stakingTb.get(i));
-            StakingDto stakingDto = new StakingDto(stakingTb.get(i));
-            stakingDtos.add(stakingDto);
-        }
-            result.put("staking", stakingDtos);
-            result.put("resultCode", "true");
-
-        return result;
-    }
 
     @ApiOperation(value = "내 스테이킹 확인", notes = "내가 등록한 스테이킹 확인")
     @ApiResponses(value = {
@@ -560,50 +413,8 @@ public class WalletController {
 
     }
 
-    @ApiOperation(value = "지갑 주소로 스테이킹 확인", notes = "지갑 주소 검색으로 스테이킹 현황 확인")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "address", value = "지갑 주소", required = true),
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode")
-    })
-    @RequestMapping(value = "/staking/address", method = RequestMethod.POST)
-    public HashMap staking_view_address(@RequestBody HashMap<String, Object> data) {
 
-        HashMap<String, Object> result = new HashMap<>();
-
-        if(ObjectUtils.isEmpty(data.get("address"))){
-            result.put("message", "address is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        String address = data.get("address").toString();
-
-        try{
-            List<StakingTb> stakingTb = stakingRepository.getStakingByAddress(address);
-            List<StakingDto> stakingDtos = new ArrayList<>();
-
-            for(int i=0;i<stakingTb.size();i++){
-                stakingTb.get(i);
-                StakingDto stakingDto = new StakingDto(stakingTb.get(i));
-                stakingDtos.add(stakingDto);
-            }
-
-            result.put("staking", stakingDtos);
-            result.put("resultCode", "true");
-            return result;
-        }catch(Exception e){
-            log.info("{}", e);
-            result.put("message", "db error");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-
-    }
-
-    @ApiOperation(value = "토큰 구매", notes = "토큰 구매")
+    @ApiOperation(value = "토큰 구매(입금)", notes = "토큰 구매")
     @RequestMapping(value = "/purchase", method = RequestMethod.POST)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "coin", value = "구입한 토큰 값", required = true, dataType = "string"),
@@ -636,6 +447,15 @@ public class WalletController {
             user.setCoin(number1.add(number2).doubleValue());
             userRepository.save(user);
 
+            Date now = new Date();
+            InOutHistoryTb inOutHistoryTb = new InOutHistoryTb();
+            inOutHistoryTb.setDate(now);
+            inOutHistoryTb.setCoin(coin);
+            inOutHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            inOutHistoryTb.setAddress("");
+            inOutHistoryTb.setIn_out(true);
+
+            inOutHistoryRepository.save(inOutHistoryTb);
 
 
             result.put("resultCode", "true");
@@ -690,6 +510,7 @@ public class WalletController {
 
         double user_coin = userTb.getCoin();
 
+
         if(user_coin >= amount){
 
             try{
@@ -703,13 +524,6 @@ public class WalletController {
                 askingTb.setStatus(false);
                 askingRepository.save(askingTb);
 
-                InOutHistoryTb inOutHistoryTb = new InOutHistoryTb();
-                inOutHistoryTb.setIn_out(false);
-                inOutHistoryTb.setAccount(walletTb.getAddress());
-                inOutHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-                inOutHistoryRepository.save(inOutHistoryTb);
-
-
                 Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
 
                 BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
@@ -719,10 +533,17 @@ public class WalletController {
                 Credentials credentials = WalletUtils.loadCredentials("test", file);
 
                 Abi abi = Abi.load(contractAddress, web3j, credentials, gasPrice, GasLimit);
-
                 BigInteger value = Convert.toWei(String.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
                 abi.transfer(walletTb.getAddress(), value).send();
 
+                Date now = new Date();
+                InOutHistoryTb inOutHistoryTb = new InOutHistoryTb();
+                inOutHistoryTb.setIn_out(false);
+                inOutHistoryTb.setAddress(walletTb.getAddress());
+                inOutHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                inOutHistoryTb.setDate(now);
+                inOutHistoryTb.setCoin(amount);
+                inOutHistoryRepository.save(inOutHistoryTb);
 
                 result.put("resultCode", "true");
                 return result;
