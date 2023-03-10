@@ -41,9 +41,9 @@ public class ScheduleTest {
     @Autowired
     private LoginHistoryRepository loginHistoryRepository;
 
-    @Scheduled(fixedRate = 60000)
+//    @Scheduled(fixedRate = 1000000)
+    @Scheduled(cron = "0 0 0 * * ?")
     public void scheduleFixedRateWithInitialDelayTask() throws Exception {
-
         List<StakingTb> stakingTbList = stakingRepository.getStakingTbThatStateTrue();
 
         for(int i=0;i<stakingTbList.size();i++){

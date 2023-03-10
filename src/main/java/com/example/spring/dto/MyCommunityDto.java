@@ -40,7 +40,7 @@ public class MyCommunityDto {
 
     double total_reward;
 
-    public MyCommunityDto(CommunityTb community, int comment_total, int like_total, double total_reward, String name) {
+    public MyCommunityDto(CommunityTb community, int comment_total, int like_total, String name) {
         this.community_id = community.getCommunity_id();
         this.name = name;
         this.title = community.getTitle();
@@ -54,7 +54,7 @@ public class MyCommunityDto {
         this.get_coin = community.getGet_coin();
         this.comment_total = comment_total;
         this.like_total = like_total;
-        this.total_reward = total_reward;
+        this.total_reward = community.getTotal_reward();
         this.content = community.getContent();
     }
 }
