@@ -1,6 +1,8 @@
 package com.example.spring.controller;
 
 import com.example.spring.dao.*;
+import com.example.spring.dto.InOutHistoryDto;
+import com.example.spring.dto.MyCommunityDto;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
@@ -16,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +55,9 @@ public class HomeController {
 
     @Autowired
     private LoginHistoryRepository loginHistoryRepository;
+
+    @Autowired
+    private InOutHistoryRepository inOutHistoryRepository;
 
     @ApiOperation(value = "서버 동작 확인용", notes = "hello 메세지만 뿌림")
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -115,7 +121,7 @@ public class HomeController {
                 return result;
             }
         } catch (Exception e) {
-            result.put("message", "not exist");
+            result.put("message", "db error");
             result.put("resultCode", "false");
             return result;
         }
@@ -189,6 +195,8 @@ public class HomeController {
                 userTb.setPw(passwordEncoder.encode(pw));
                 userTb.setName(name);
                 userTb.setRole("user");
+                userTb.setCoin(0);
+                userTb.setState(true);
                 userRepository.save(userTb);
                 result.put("resultCode", "true");
                 return result;
@@ -316,6 +324,55 @@ public class HomeController {
             result.put("resultCode", "false");
             return result;
         }
+    }
+
+    @ApiOperation(value = "입출금 내역 조회", notes = "입출금 내역 조회하는 페이지")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "nowpage", value = "현재 페이지 번호", required = true),
+            @ApiImplicitParam(name = "count", value = "보여줄 입출금 갯수", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/cash-flow", method = RequestMethod.GET)
+    public HashMap my_community(@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage, @RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        int start = countpage * nowpage;
+        int end = countpage*(nowpage+1) - 1;
+
+        try{
+
+            List<InOutHistoryTb> inOutHistoryTbList = inOutHistoryRepository.getInoutHistoryByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            List<InOutHistoryDto> send_list = new ArrayList<>();
+
+            if(end>=inOutHistoryTbList.size()) end = inOutHistoryTbList.size()-1;
+
+            for(int i=start;i<=end;i++){
+                InOutHistoryDto inOutHistoryDto = new InOutHistoryDto(inOutHistoryTbList.get(i));
+                send_list.add(inOutHistoryDto);
+            }
+
+            result.put("total", inOutHistoryTbList.size());
+            result.put("list", send_list);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e){
+
+            result.put("resultCode", "false");
+            result.put("message", "db error");
+            return result;
+
+        }
+
     }
 
 

@@ -4,15 +4,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "transaction")
+@Table(name = "cashFlowTb")
 public class InOutHistoryTb {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(name = "user_id")
@@ -24,8 +25,11 @@ public class InOutHistoryTb {
     @Column(name = "coin")
     private double coin;
 
-    @Column(name = "account")
-    private String account;
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "date")
+    private Date date;
 
 
 }
