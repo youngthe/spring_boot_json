@@ -2,6 +2,8 @@ package com.example.spring.repository;
 
 import com.example.spring.dao.UserTb;
 
+import java.util.List;
+
 public interface UserTbRepositoryCustom {
 
     public boolean LoginCheck(UserTb userTb);
@@ -17,4 +19,6 @@ public interface UserTbRepositoryCustom {
     public boolean AccountCheck(String account);
 
     public String getRoleByUserId(int user_id);
+
+    public List<UserTb> getUserTbByRole(String role);
 }

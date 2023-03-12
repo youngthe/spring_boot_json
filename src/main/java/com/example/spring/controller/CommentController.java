@@ -322,6 +322,7 @@ public class CommentController {
         try{
 
             List<CommentTb> commentTbList = commentRepository.getCommentListDistinct(jwtTokenProvider.getUserId(tokenHeader));
+            System.out.println(commentTbList);
             List<RecommentDto> recommentDtoList = new ArrayList<>();
             List<CommunityWriterDto> communityTbList = new ArrayList<>();
             List<CommentWriterDto> commentWriterDto_list = new ArrayList<>();

@@ -5,6 +5,19 @@ import com.example.spring.repository.StakingRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.WalletUtils;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.response.EthGasPrice;
+import org.web3j.protocol.http.HttpService;
+import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.gas.ContractGasProvider;
+import org.web3j.tx.gas.DefaultGasProvider;
+import org.web3j.utils.Convert;
+
+import java.io.File;
+import java.math.BigInteger;
 
 @SpringBootTest
 class ApplicationTests {
@@ -50,27 +63,29 @@ class ApplicationTests {
 //        System.out.println(web3ClientVersion.getWeb3ClientVersion());
 //    }
 
-//    @Test
-//    public void getEthClientVersionASync() throws Exception {
-//        Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
-////
-//        ContractGasProvider gasProvider = new DefaultGasProvider();
-//        BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
-//        BigInteger GasLimit = BigInteger.valueOf(300000L);
-//        EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
-//        File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
-//        Credentials credentials = WalletUtils.loadCredentials("test", file);
-//        System.out.println(credentials.getAddress());
+    //토큰 갯수 확인
+    @Test
+    public void getEthClientVersionASync() throws Exception {
+        Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
 //
-//        Abi abi = Abi.load("0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5", web3j, credentials, gasPrice, GasLimit);
-////        Abi abi1 = Abi.load("0xe92C60dfEc285704b8394212faf40C8CDC42997e", web3j, credentials, gasProvider);
-//        BigInteger value = Convert.toWei("5", Convert.Unit.ETHER).toBigInteger();
-//        BigInteger balances = Convert.fromWei(abi._balances(credentials.getAddress()).send().toString(), Convert.Unit.ETHER).toBigInteger();
-////        abi.transfer("0x1de5e7CEF591A57C9f9Ed263A320563c5726A056", value).send();
-//        System.out.println(balances);
-//
-//
-//    }
+        ContractGasProvider gasProvider = new DefaultGasProvider();
+        BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
+        BigInteger GasLimit = BigInteger.valueOf(300000L);
+        EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
+        File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
+        Credentials credentials = WalletUtils.loadCredentials("test", file);
+        System.out.println(credentials.getAddress());
+
+        Abi abi = Abi.load("0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5", web3j, credentials, gasPrice, GasLimit);
+//        Abi abi1 = Abi.load("0xe92C60dfEc285704b8394212faf40C8CDC42997e", web3j, credentials, gasProvider);
+        BigInteger value = Convert.toWei("5", Convert.Unit.ETHER).toBigInteger();
+        BigInteger balances = Convert.fromWei(abi._balances(credentials.getAddress()).send().toString(), Convert.Unit.ETHER).toBigInteger();
+//        abi.transfer("0x1de5e7CEF591A57C9f9Ed263A320563c5726A056", value).send();
+        System.out.println(balances);
+
+
+
+    }
     @Autowired
     LoginHistoryRepository loginHistoryRepository;
     @Test

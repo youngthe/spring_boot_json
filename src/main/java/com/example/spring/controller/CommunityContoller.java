@@ -697,9 +697,8 @@ public class CommunityContoller {
             for(int i=start;i<=end;i++){
                 comment_total = commentRepository.getCommentListSize(mycommunity.get(i).getCommunity_id());
                 like_total = likeRepository.getLikeTotal(mycommunity.get(i).getCommunity_id());
-                total_reward = mycommunity.get(i).getHits() + mycommunity.get(i).getGet_coin() + like_total;
                 user_name = userRepository.getNameByPk(jwtTokenProvider.getUserId(tokenHeader));
-                MyCommunityDto dto = new MyCommunityDto(mycommunity.get(i), comment_total, like_total, total_reward, user_name);
+                MyCommunityDto dto = new MyCommunityDto(mycommunity.get(i), comment_total, like_total,user_name);
                 communityDtoList.add(dto);
             }
             result.put("total", mycommunity.size());
@@ -751,9 +750,8 @@ public class CommunityContoller {
 
                 comment_total = commentRepository.getCommentListSize(communityList.get(i).getCommunity_id());
                 like_total = likeRepository.getLikeTotal(communityList.get(i).getCommunity_id());
-                total_reward = communityList.get(i).getHits() + communityList.get(i).getGet_coin() + like_total;
                 user_name = userRepository.getNameByPk(communityList.get(i).getUser_id());
-                MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, total_reward, user_name);
+                MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, user_name);
                 communityDtoList.add(dto);
 
             }
@@ -806,9 +804,8 @@ public class CommunityContoller {
 
                 comment_total = commentRepository.getCommentListSize(communityList.get(i).getCommunity_id());
                 like_total = likeRepository.getLikeTotal(communityList.get(i).getCommunity_id());
-                total_reward = communityList.get(i).getHits() + communityList.get(i).getGet_coin() + like_total;
                 user_name = userRepository.getNameByPk(communityList.get(i).getUser_id());
-                MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, total_reward, user_name);
+                MyCommunityDto dto = new MyCommunityDto(communityList.get(i), comment_total, like_total, user_name);
                 communityDtoList.add(dto);
 
             }

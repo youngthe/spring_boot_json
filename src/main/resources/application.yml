@@ -1,8 +1,9 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/coin
+    url: jdbc:mysql://localhost:3306/coin?characterEncoding=UTF-8
     username: root
     password: test
+
   jpa:
     hibernate:
       ddl-auto: update

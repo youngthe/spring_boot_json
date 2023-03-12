@@ -1,8 +1,7 @@
 package com.example.spring.controller;
 
 import com.example.spring.dao.*;
-import com.example.spring.dto.InOutHistoryDto;
-import com.example.spring.dto.MyCommunityDto;
+import com.example.spring.dto.CashFlowHistoryDto;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
@@ -17,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +57,7 @@ public class HomeController {
     private LoginHistoryRepository loginHistoryRepository;
 
     @Autowired
-    private InOutHistoryRepository inOutHistoryRepository;
+    private CashFlowHistoryRepository cashFlowHistoryRepository;
 
     @ApiOperation(value = "서버 동작 확인용", notes = "hello 메세지만 뿌림")
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -96,18 +96,31 @@ public class HomeController {
         String pw = data.get("pw").toString();
 
         log.info("account : {}", account);
+
+
+        if(userRepository.AccountCheck(account)){
+            result.put("message", "not exist");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         try {
 
             UserTb user = userRepository.getUserTbByAccount(account);
 
             String get_pw = user.getPw();
 
-
-
             if (passwordEncoder.matches(pw, get_pw)) {
-                result.put("resultCode", "true");
-                result.put("jwt", jwtTokenProvider.createToken(user));
-                LoginHistoryTb loginHistoryTb = new LoginHistoryTb();
+
+                if(!user.isState()){
+                    result.put("message", "unavailable");
+                    result.put("resultCode", "false");
+                    return result;
+                }else{
+                    result.put("resultCode", "true");
+                    result.put("jwt", jwtTokenProvider.createToken(user));
+                    LoginHistoryTb loginHistoryTb = new LoginHistoryTb();
+                }
 
 //                Date date = new Date();
 //                SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
@@ -116,11 +129,12 @@ public class HomeController {
 
                 return result;
             } else {
-                result.put("message", "not exist");
+                result.put("message", "no match");
                 result.put("resultCode", "false");
                 return result;
             }
         } catch (Exception e) {
+            System.out.println(e);
             result.put("message", "db error");
             result.put("resultCode", "false");
             return result;
@@ -191,12 +205,14 @@ public class HomeController {
         if (userRepository.AccountCheck(account)) {
             try {
                 UserTb userTb = new UserTb();
+                Date now = new Date();
                 userTb.setAccount(account);
                 userTb.setPw(passwordEncoder.encode(pw));
                 userTb.setName(name);
                 userTb.setRole("user");
                 userTb.setCoin(0);
                 userTb.setState(true);
+                userTb.setDate(now);
                 userRepository.save(userTb);
                 result.put("resultCode", "true");
                 return result;
@@ -350,17 +366,17 @@ public class HomeController {
 
         try{
 
-            List<InOutHistoryTb> inOutHistoryTbList = inOutHistoryRepository.getInoutHistoryByUserId(jwtTokenProvider.getUserId(tokenHeader));
-            List<InOutHistoryDto> send_list = new ArrayList<>();
+//            List<CashFlowHistoryTb> cashFlowHistoryTbList = cashFlowHistoryRepository.getInoutHistoryByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            List<CashFlowHistoryDto> send_list = new ArrayList<>();
 
-            if(end>=inOutHistoryTbList.size()) end = inOutHistoryTbList.size()-1;
-
-            for(int i=start;i<=end;i++){
-                InOutHistoryDto inOutHistoryDto = new InOutHistoryDto(inOutHistoryTbList.get(i));
-                send_list.add(inOutHistoryDto);
-            }
-
-            result.put("total", inOutHistoryTbList.size());
+//            if(end>= cashFlowHistoryTbList.size()) end = cashFlowHistoryTbList.size()-1;
+//
+//            for(int i=start;i<=end;i++){
+//                CashFlowHistoryDto cashFlowHistoryDto = new CashFlowHistoryDto(cashFlowHistoryTbList.get(i));
+//                send_list.add(cashFlowHistoryDto);
+//            }
+//
+//            result.put("total", cashFlowHistoryTbList.size());
             result.put("list", send_list);
             result.put("resultCode", "true");
             return result;
@@ -376,7 +392,60 @@ public class HomeController {
     }
 
 
+    @ApiOperation(value = "토큰 구매(입금)", notes = "토큰 구매")
+    @RequestMapping(value = "/purchase", method = RequestMethod.POST)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "coin", value = "구입한 토큰 값", required = true, dataType = "string"),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    public HashMap token(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if (ObjectUtils.isEmpty(data.get("coin"))) {
+            result.put("message", "coin is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        double coin = Double.parseDouble(data.get("coin").toString());
+        BigDecimal num1 = BigDecimal.valueOf(coin);
+        BigDecimal num2 = new BigDecimal("2");
+        coin = num1.multiply(num2).doubleValue();
+
+        try {
+
+            UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+            BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
+            BigDecimal number2 = new BigDecimal(coin);
+            user.setCoin(number1.add(number2).doubleValue());
+            userRepository.save(user);
+
+            Date now = new Date();
+            CashFlowHistoryTb cashFlowHistoryTb = new CashFlowHistoryTb();
+            cashFlowHistoryTb.setDate(now);
+            cashFlowHistoryTb.setCoin(coin);
+            cashFlowHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            cashFlowHistoryTb.setTo_address("직접 구매");
+            cashFlowHistoryTb.setFrom_address("직접 구매");
+            cashFlowHistoryTb.setState(1);
+
+            cashFlowHistoryRepository.save(cashFlowHistoryTb);
 
 
+            result.put("resultCode", "true");
+            return result;
+
+
+        } catch (Exception e) {
+            log.info("{}", e);
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
 
 }

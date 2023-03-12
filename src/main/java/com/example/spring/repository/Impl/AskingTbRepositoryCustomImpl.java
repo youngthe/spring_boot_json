@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 public class AskingTbRepositoryCustomImpl extends QuerydslRepositorySupport implements AskingTbRepositoryCustom {
 
@@ -35,6 +36,17 @@ public class AskingTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
                 .selectFrom(qAskingTb)
                 .where(qAskingTb.asking_id.eq(asking_id))
                 .fetchOne();
+
+    }
+
+    public List<AskingTb> getAskingListByUserId(int user_id){
+
+        QAskingTb qAskingTb = QAskingTb.askingTb;
+
+        return query
+                .selectFrom(qAskingTb)
+                .where(qAskingTb.user_id.eq(user_id))
+                .fetch();
 
     }
 }

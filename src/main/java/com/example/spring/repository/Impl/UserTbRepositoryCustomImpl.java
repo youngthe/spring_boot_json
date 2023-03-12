@@ -7,6 +7,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.List;
+
 public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implements UserTbRepositoryCustom {
 
     @Autowired
@@ -99,4 +101,17 @@ public class UserTbRepositoryCustomImpl extends QuerydslRepositorySupport implem
                 .fetchOne().getRole();
 
     }
+
+    public List<UserTb> getUserTbByRole(String role){
+
+        QUserTb qusertb = QUserTb.userTb;
+
+        return query
+                .selectFrom(qusertb)
+                .where(qusertb.role.eq(role))
+                .fetch();
+
+    }
+
+
 }

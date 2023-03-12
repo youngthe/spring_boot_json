@@ -1,6 +1,5 @@
 package com.example.spring.controller;
 
-import com.example.spring.Abi;
 import com.example.spring.dao.*;
 import com.example.spring.dto.StakingDto;
 import com.example.spring.repository.*;
@@ -16,16 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.WalletUtils;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.EthGasPrice;
-import org.web3j.protocol.http.HttpService;
-import org.web3j.utils.Convert;
 
-import java.io.File;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -52,7 +43,7 @@ public class WalletController {
     private AskingRepository askingRepository;
 
     @Autowired
-    private InOutHistoryRepository inOutHistoryRepository;
+    private CashFlowHistoryRepository cashFlowHistoryRepository;
 
 
     @ApiOperation(value = "지갑 추가", notes = "지갑 주소 등록하기")
@@ -414,18 +405,19 @@ public class WalletController {
     }
 
 
-    @ApiOperation(value = "토큰 구매(입금)", notes = "토큰 구매")
-    @RequestMapping(value = "/purchase", method = RequestMethod.POST)
+
+    @ApiOperation(value = "입금 요청", notes = "거래소 등에서 입금 요청")
+    @RequestMapping(value = "/wallet/asking", method = RequestMethod.POST)
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "coin", value = "구입한 토큰 값", required = true, dataType = "string"),
+            @ApiImplicitParam(name = "coin", value = "입금 요청할 코인 갯수", required = true, dataType = "string"),
+            @ApiImplicitParam(name = "address", value = "입금한 addres 주소", required = true, dataType = "string"),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    public HashMap token(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
+    public HashMap input_asking(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
-
 
         if (ObjectUtils.isEmpty(data.get("coin"))) {
             result.put("message", "coin is null");
@@ -433,7 +425,14 @@ public class WalletController {
             return result;
         }
 
+        if (ObjectUtils.isEmpty(data.get("address"))) {
+            result.put("message", "address is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         double coin = Double.parseDouble(data.get("coin").toString());
+        String address = data.get("address").toString();
         BigDecimal num1 = BigDecimal.valueOf(coin);
         BigDecimal num2 = new BigDecimal("2");
         coin = num1.multiply(num2).doubleValue();
@@ -442,21 +441,15 @@ public class WalletController {
 
             UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
 
-            BigDecimal number1 = BigDecimal.valueOf(user.getCoin());
-            BigDecimal number2 = new BigDecimal(coin);
-            user.setCoin(number1.add(number2).doubleValue());
-            userRepository.save(user);
-
             Date now = new Date();
-            InOutHistoryTb inOutHistoryTb = new InOutHistoryTb();
-            inOutHistoryTb.setDate(now);
-            inOutHistoryTb.setCoin(coin);
-            inOutHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-            inOutHistoryTb.setAddress("");
-            inOutHistoryTb.setIn_out(true);
-
-            inOutHistoryRepository.save(inOutHistoryTb);
-
+            AskingTb askingTb = new AskingTb();
+            askingTb.setAddress(address);
+            askingTb.setInput_output(true);
+            askingTb.setAsking_time(now);
+            askingTb.setCoin(coin);
+            askingTb.setStatus(0);
+            askingTb.setUser_id(user.getUser_id());
+            askingRepository.save(askingTb);
 
             result.put("resultCode", "true");
             return result;
@@ -472,13 +465,13 @@ public class WalletController {
 
     @ApiOperation(value = "출금 요청", notes = "계정에 가지고 있는 코인을 내 지갑으로 출금 요청")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "amount", value = "출금할 가격", required = true),
-            @ApiImplicitParam(name = "wallet_id", value = "지갑 id", required = true),
+            @ApiImplicitParam(name = "coin", value = "출금할 가격", required = true),
+            @ApiImplicitParam(name = "address", value = "지갑 주소", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "resultCode")
     })
-    @RequestMapping(value = "/wallet/order", method = RequestMethod.PUT)
+    @RequestMapping(value = "/wallet/asking", method = RequestMethod.PUT)
     public HashMap asking_output(@RequestBody HashMap<String, Object> data, @RequestHeader("token") String tokenHeader) {
 
         HashMap<String, Object> result = new HashMap<>();
@@ -489,64 +482,39 @@ public class WalletController {
             return result;
         }
 
-        if(ObjectUtils.isEmpty(data.get("amount"))){
-            result.put("message", "amount is null");
+        if(ObjectUtils.isEmpty(data.get("coin"))){
+            result.put("message", "coin is null");
             result.put("resultCode", "false");
             return result;
         }
 
-        if(ObjectUtils.isEmpty(data.get("wallet_id"))){
-            result.put("message", "wallet_id is null");
+        if(ObjectUtils.isEmpty(data.get("address"))){
+            result.put("message", "address is null");
             result.put("resultCode", "false");
             return result;
         }
 
-        double amount = Double.parseDouble(data.get("amount").toString());
-        int wallet_id = Integer.parseInt(data.get("wallet_id").toString());
-
-        WalletTb walletTb = walletRepository.getWalletByWallet_id(wallet_id);
+        double coin = Double.parseDouble(data.get("coin").toString());
+        String address = data.get("address").toString();
 
         UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
 
         double user_coin = userTb.getCoin();
-
-
-        if(user_coin >= amount){
+        if(user_coin >= coin){
 
             try{
-                AskingTb askingTb = new AskingTb();
-                askingTb.setCreated_date(LocalDate.now());
-                askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-                askingTb.setAmount(amount);
-                //출금 요청 false, 입금 요청 true
-                askingTb.setInput_output(false);
-                //state 요청 실행 전 false, 실행 후 true
-                askingTb.setStatus(false);
-                askingRepository.save(askingTb);
-
-                Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
-
-                BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
-                BigInteger GasLimit = BigInteger.valueOf(20000000L);
-                String contractAddress = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
-                File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
-                Credentials credentials = WalletUtils.loadCredentials("test", file);
-
-                Abi abi = Abi.load(contractAddress, web3j, credentials, gasPrice, GasLimit);
-                BigInteger value = Convert.toWei(String.valueOf(amount), Convert.Unit.ETHER).toBigInteger();
-                abi.transfer(walletTb.getAddress(), value).send();
-
                 Date now = new Date();
-                InOutHistoryTb inOutHistoryTb = new InOutHistoryTb();
-                inOutHistoryTb.setIn_out(false);
-                inOutHistoryTb.setAddress(walletTb.getAddress());
-                inOutHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-                inOutHistoryTb.setDate(now);
-                inOutHistoryTb.setCoin(amount);
-                inOutHistoryRepository.save(inOutHistoryTb);
-
+                AskingTb askingTb = new AskingTb();
+                askingTb.setAsking_time(now);
+                askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+                askingTb.setCoin(coin);
+                askingTb.setInput_output(false);
+                askingTb.setStatus(0);
+                askingTb.setAddress(address);
+                askingRepository.save(askingTb);
                 result.put("resultCode", "true");
                 return result;
+
             }catch(Exception e){
                 result.put("resultCode", "false");
                 return result;
@@ -557,6 +525,36 @@ public class WalletController {
             result.put("resultCode", "false");
             return result;
 
+        }
+
+    }
+
+    @ApiOperation(value = "내 요청상태 확인", notes = "내 요청상태 확인")
+    @ApiImplicitParams({
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value = "/wallet/asking", method = RequestMethod.GET)
+    public HashMap asking_state(@RequestHeader("token") String tokenHeader) {
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        try{
+            List<AskingTb> askingTbList = askingRepository.getAskingListByUserId(jwtTokenProvider.getUserId(tokenHeader));
+            result.put("list", askingTbList);
+            result.put("resultCode", "true");
+            return result;
+        }catch(Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
         }
 
     }
