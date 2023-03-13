@@ -49,4 +49,13 @@ public class AskingTbRepositoryCustomImpl extends QuerydslRepositorySupport impl
                 .fetch();
 
     }
+
+    public List<AskingTb> getAskingListByInputOutput(boolean input_output){
+        QAskingTb qAskingTb = QAskingTb.askingTb;
+
+        return query
+                .selectFrom(qAskingTb)
+                .where(qAskingTb.input_output.eq(input_output))
+                .fetch();
+    }
 }

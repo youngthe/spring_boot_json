@@ -45,8 +45,6 @@ public class AdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private CashFlowHistoryRepository cashFlowHistoryRepository;
 
     @Autowired
     private StakingRepository stakingRepository;
@@ -58,25 +56,35 @@ public class AdminController {
     private CategoryRepository categoryRepository;
 
 
-    @ApiOperation(value = "요청 리스트", notes = "admin 계정만 관리자 페이지 접근 가능, 입출금 요청 승인 확인")
+    @ApiOperation(value = "입출금 내역 조회", notes = "admin 계정만 관리자 페이지 접근 가능, 입출금 요청 승인 확인")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode, askinglist")
+            @ApiResponse(responseCode = "200", description = "resultCode")
     })
     @RequestMapping(value="/admin/asking", method = RequestMethod.GET)
-    public HashMap admin(@RequestHeader("token") String tokenHeader){
+    public HashMap cash_input_output(@RequestHeader("token") String tokenHeader,@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage){
 
         HashMap<String,Object> result = new HashMap<>();
         UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+        int start = countpage * nowpage;
+        int end = countpage*(nowpage+1) - 1;
 
         if(!jwtTokenProvider.validateToken(tokenHeader)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
-
         if(Objects.equals(usertb.getRole(), "admin")){
+
+            List<AskingTb> askinglist_paging = new ArrayList<>();
             List<AskingTb> askinglist = askingRepository.findAll();
-            result.put("askinglist", askinglist);
+            if(end>=askinglist.size()) end = askinglist.size()-1;
+
+            for(int i=start;i<=end;i++){
+                askinglist_paging.add(askinglist.get(i));
+            }
+            result.put("askinglist", askinglist_paging);
+            result.put("total", askinglist.size());
             return result;
         }else{
             result.put("message", "not admin");
@@ -85,6 +93,77 @@ public class AdminController {
         }
 
     }
+
+    @ApiOperation(value = "입금 내역 조회", notes = "입금 내역 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/asking/input", method = RequestMethod.GET)
+    public HashMap cash_input(@RequestHeader("token") String tokenHeader ,@RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage){
+
+        HashMap<String,Object> result = new HashMap<>();
+        UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        int start = countpage * nowpage;
+        int end = countpage*(nowpage+1) - 1;
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+        List<AskingTb> askinglist_paging = new ArrayList<>();
+        if(Objects.equals(usertb.getRole(), "admin")){
+            List<AskingTb> askinglist = askingRepository.getAskingListByInputOutput(true);
+            if(end>=askinglist.size()) end = askinglist.size()-1;
+            for(int i=start;i<=end;i++){
+                askinglist_paging.add(askinglist.get(i));
+            }
+            result.put("askinglist", askinglist_paging);
+            result.put("total", askinglist.size());
+            return result;
+        }else{
+            result.put("message", "not admin");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+    }
+    @ApiOperation(value = "출금 내역 조회", notes = "출금 내역 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/asking/output", method = RequestMethod.GET)
+    public HashMap cash_output(@RequestHeader("token") String tokenHeader, @RequestParam ("nowpage") int nowpage, @RequestParam ("count") int countpage){
+
+        HashMap<String,Object> result = new HashMap<>();
+        UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
+        int start = countpage * nowpage;
+        int end = countpage*(nowpage+1) - 1;
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+        List<AskingTb> askinglist_paging = new ArrayList<>();
+        if(Objects.equals(usertb.getRole(), "admin")){
+            List<AskingTb> askinglist = askingRepository.getAskingListByInputOutput(false);
+            if(end>=askinglist.size()) end = askinglist.size()-1;
+            for(int i=start;i<=end;i++){
+                askinglist_paging.add(askinglist.get(i));
+            }
+            result.put("askinglist", askinglist_paging);
+            result.put("total", askinglist.size());
+            return result;
+        }else{
+            result.put("message", "not admin");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+    }
+
 
     @ApiOperation(value = "관리자 회원가입", notes = "아이디 비밀번호 별명을 통한 회원가입")
     @ApiImplicitParams({
@@ -169,7 +248,7 @@ public class AdminController {
             AskingTb askingTb = askingRepository.getAskingTbByAskingId(asking_id);
             UserTb usertb = userRepository.getUserTbByUserId(askingTb.getUser_id());
 
-            if(askingTb.getStatus() != 0){
+            if(askingTb.getType() != 0){
                 result.put("message", "already");
                 result.put("resultCode", "false");
                 return result;
@@ -182,7 +261,7 @@ public class AdminController {
                 usertb.setCoin(bigNumber1.add(bigNumber2).doubleValue());
                 userRepository.save(usertb);
                 Date now = new Date();
-                askingTb.setStatus(1);
+                askingTb.setType(1);
                 askingTb.setCompleted_time(now);
                 askingRepository.save(askingTb);
                 result.put("resultCode", "true");
@@ -236,7 +315,7 @@ public class AdminController {
                     usertb.setCoin(value.doubleValue());
                     userRepository.save(usertb);
                     Date now = new Date();
-                    askingTb.setStatus(1);
+                    askingTb.setType(1);
                     askingTb.setCompleted_time(now);
                     askingRepository.save(askingTb);
                     result.put("resultCode", "true");
@@ -284,7 +363,7 @@ public class AdminController {
         if(jwtTokenProvider.validateToken(tokenHeader) && Objects.equals(usertb.getAccount(), "admin")){
             Date now = new Date();
             AskingTb askingTb = askingRepository.getAskingTbByAskingId(asking_id);
-            askingTb.setStatus(2);
+            askingTb.setType(2);
             askingTb.setCompleted_time(now);
             askingRepository.save(askingTb);
             return result;
@@ -549,7 +628,7 @@ public class AdminController {
 
         Date now = new Date();
         AskingTb askingTb = new AskingTb();
-        askingTb.setStatus(4);
+        askingTb.setType(4);
         askingTb.setInput_output(true);
         askingTb.setCoin(coin);
         askingTb.setAddress("관리자");
@@ -611,7 +690,7 @@ public class AdminController {
 
             Date now = new Date();
             AskingTb askingTb = new AskingTb();
-            askingTb.setStatus(4);
+            askingTb.setType(4);
             askingTb.setInput_output(true);
             askingTb.setCoin(coin);
             askingTb.setAddress("관리자");
@@ -765,13 +844,14 @@ public class AdminController {
 
         HashMap<String,Object> result = new HashMap<>();
 
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!jwtTokenProvider.validateToken(tokenHeader) || ObjectUtils.isEmpty(user.getCoin())){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+
         if(!user.getRole().equals("admin")){
             result.put("message", "not admin");
             result.put("resultCode","false");
@@ -856,13 +936,13 @@ public class AdminController {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!jwtTokenProvider.validateToken(tokenHeader) || ObjectUtils.isEmpty(user)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
             result.put("message", "not admin");
             result.put("resultCode","false");
@@ -900,13 +980,13 @@ public class AdminController {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if(!jwtTokenProvider.validateToken(tokenHeader)){
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!jwtTokenProvider.validateToken(tokenHeader) || ObjectUtils.isEmpty(user)){
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;
         }
 
-        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
             result.put("message", "not admin");
             result.put("resultCode","false");

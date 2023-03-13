@@ -30,8 +30,8 @@ public class AskingTb {
     private Date completed_time;
 
     //0. 요청 승인 전 상태, 1. 승인 정상 완료 2. 취소(요청 거절) 3. 직접 입금, 4. 강제 입금 또는 출금
-    @Column(name = "status")
-    private int status;
+    @Column(name = "type")
+    private int type;
 
     //출금 false, 입금 true
     @Column(name = "input_output")

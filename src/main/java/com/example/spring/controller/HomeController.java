@@ -1,7 +1,6 @@
 package com.example.spring.controller;
 
 import com.example.spring.dao.*;
-import com.example.spring.dto.CashFlowHistoryDto;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
@@ -57,7 +56,8 @@ public class HomeController {
     private LoginHistoryRepository loginHistoryRepository;
 
     @Autowired
-    private CashFlowHistoryRepository cashFlowHistoryRepository;
+    private AskingRepository askingRepository;
+
 
     @ApiOperation(value = "서버 동작 확인용", notes = "hello 메세지만 뿌림")
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -369,7 +369,7 @@ public class HomeController {
         try{
 
 //            List<CashFlowHistoryTb> cashFlowHistoryTbList = cashFlowHistoryRepository.getInoutHistoryByUserId(jwtTokenProvider.getUserId(tokenHeader));
-            List<CashFlowHistoryDto> send_list = new ArrayList<>();
+            List<AskingTb> send_list = new ArrayList<>();
 
 //            if(end>= cashFlowHistoryTbList.size()) end = cashFlowHistoryTbList.size()-1;
 //
@@ -427,15 +427,14 @@ public class HomeController {
             userRepository.save(user);
 
             Date now = new Date();
-            CashFlowHistoryTb cashFlowHistoryTb = new CashFlowHistoryTb();
-            cashFlowHistoryTb.setDate(now);
-            cashFlowHistoryTb.setCoin(coin);
-            cashFlowHistoryTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
-            cashFlowHistoryTb.setTo_address("직접 구매");
-            cashFlowHistoryTb.setFrom_address("직접 구매");
-            cashFlowHistoryTb.setState(1);
-
-            cashFlowHistoryRepository.save(cashFlowHistoryTb);
+            AskingTb askingTb = new AskingTb();
+            askingTb.setAsking_time(now);
+            askingTb.setCoin(coin);
+            askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
+            askingTb.setInput_output(true);
+            askingTb.setType(3);
+            askingTb.setAddress("self");
+            askingRepository.save(askingTb);
 
 
             result.put("resultCode", "true");

@@ -42,8 +42,6 @@ public class WalletController {
     @Autowired
     private AskingRepository askingRepository;
 
-    @Autowired
-    private CashFlowHistoryRepository cashFlowHistoryRepository;
 
 
     @ApiOperation(value = "지갑 추가", notes = "지갑 주소 등록하기")
@@ -419,6 +417,12 @@ public class WalletController {
 
         HashMap<String, Object> result = new HashMap<>();
 
+        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         if (ObjectUtils.isEmpty(data.get("coin"))) {
             result.put("message", "coin is null");
             result.put("resultCode", "false");
@@ -447,7 +451,7 @@ public class WalletController {
             askingTb.setInput_output(true);
             askingTb.setAsking_time(now);
             askingTb.setCoin(coin);
-            askingTb.setStatus(0);
+            askingTb.setType(0);
             askingTb.setUser_id(user.getUser_id());
             askingRepository.save(askingTb);
 
@@ -509,7 +513,7 @@ public class WalletController {
                 askingTb.setUser_id(jwtTokenProvider.getUserId(tokenHeader));
                 askingTb.setCoin(coin);
                 askingTb.setInput_output(false);
-                askingTb.setStatus(0);
+                askingTb.setType(0);
                 askingTb.setAddress(address);
                 askingRepository.save(askingTb);
                 result.put("resultCode", "true");
@@ -540,7 +544,8 @@ public class WalletController {
 
         HashMap<String, Object> result = new HashMap<>();
 
-        if (!jwtTokenProvider.validateToken(tokenHeader)) {
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if (!jwtTokenProvider.validateToken(tokenHeader) || ObjectUtils.isEmpty(user)) {
             result.put("message", "Token validate");
             result.put("resultCode", "false");
             return result;

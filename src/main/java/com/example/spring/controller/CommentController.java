@@ -66,10 +66,12 @@ public class CommentController {
 
             int user_id = jwtTokenProvider.getUserId(tokenHeader);
             String user_role = userRepository.getRoleByUserId(user_id);
-            if(commentTb.getUser_id() == jwtTokenProvider.getUserId(tokenHeader) || user_role.equals("admin")){
+            if(commentTb.getUser_id() == user_id || user_role.equals("admin")){
 
-                commentRepository.deleteById(comment_id);
-                commentRepository.deleteByParent(comment_id);
+                commentTb.setComment("글쓴이가 직접 삭제하였습니다.");
+                commentRepository.save(commentTb);
+//                commentRepository.deleteById(comment_id);
+//                commentRepository.deleteByParent(comment_id);
                 result.put("resultCode", "true");
 
             }else{

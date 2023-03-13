@@ -11,4 +11,6 @@ public interface AskingTbRepositoryCustom {
 
     public List<AskingTb> getAskingListByUserId(int user_id);
 
+    public List<AskingTb> getAskingListByInputOutput(boolean input_output);
+
 }
