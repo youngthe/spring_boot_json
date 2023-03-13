@@ -48,4 +48,8 @@ public class CommunityTb {
     @Column(name = "total_reward")
     private double total_reward;
 
+    @Column(name = "state")
+    private boolean state;
+
+
 }

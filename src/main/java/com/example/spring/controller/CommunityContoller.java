@@ -197,6 +197,7 @@ public class CommunityContoller {
             communityTb.setHighlight(highlight);
             communityTb.setCategory(category);
             communityTb.setComment_allow(comment_allow);
+            communityTb.setState(true);
             communityRepository.save(communityTb);
 
             result.put("pk", communityRepository.getCommunBylast().getCommunity_id());

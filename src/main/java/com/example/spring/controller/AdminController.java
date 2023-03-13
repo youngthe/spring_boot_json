@@ -1,15 +1,9 @@
 package com.example.spring.controller;
 
 import com.example.spring.Abi;
-import com.example.spring.dao.AskingTb;
-import com.example.spring.dao.CashFlowHistoryTb;
-import com.example.spring.dao.StakingTb;
-import com.example.spring.dao.UserTb;
+import com.example.spring.dao.*;
 import com.example.spring.dto.UserAssetDto;
-import com.example.spring.repository.AskingRepository;
-import com.example.spring.repository.CashFlowHistoryRepository;
-import com.example.spring.repository.StakingRepository;
-import com.example.spring.repository.UserRepository;
+import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -57,6 +51,13 @@ public class AdminController {
 
     @Autowired
     private StakingRepository stakingRepository;
+
+    @Autowired
+    private CommunityRepository communityRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
 
     @ApiOperation(value = "요청 리스트", notes = "admin 계정만 관리자 페이지 접근 가능, 입출금 요청 승인 확인")
     @ApiResponses(value = {
@@ -473,7 +474,13 @@ public class AdminController {
 
         HashMap<String,Object> result = new HashMap<>();
 
-        UserTb userTb = userRepository.getUserTbByUserId(user_id);
+        UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!userTb.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
         List<StakingTb> stakingTb = stakingRepository.getStakingTbByUserId(user_id);
         Date now = new Date();
         StakingTb stakingTb1 = new StakingTb();
@@ -607,5 +614,71 @@ public class AdminController {
 
     }
 
+    @ApiOperation(value = "강제 게시글 삭제", notes = "부적절한 게시글 삭제")
+    @ApiImplicitParams({
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/community/{community_id}", method = RequestMethod.DELETE)
+    public HashMap community_delete(@RequestHeader("token") String tokenHeader, @PathVariable("community_id") int community_id) throws Exception {
+
+        HashMap<String,Object> result = new HashMap<>();
+
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        try{
+            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
+            communityRepository.delete(communityTb);
+            result.put("resultCode", "true");
+            return result;
+        } catch (Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "게시글 블라인드", notes = "부적절한 게시글 보이지 않게 관리")
+    @ApiImplicitParams({
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/community/{community_id}", method = RequestMethod.PUT)
+    public HashMap community_blind(@RequestHeader("token") String tokenHeader, @PathVariable("community_id") int community_id) throws Exception {
+
+        HashMap<String,Object> result = new HashMap<>();
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        try{
+            CommunityTb communityTb = communityRepository.getCommunityById(community_id);
+            if(communityTb.isState()){
+                communityTb.setState(false);
+            }else{
+                communityTb.setState(true);
+            }
+            communityRepository.save(communityTb);
+            result.put("state", communityTb.isState());
+            result.put("resultCode", "true");
+            return result;
+        } catch (Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
 
 }

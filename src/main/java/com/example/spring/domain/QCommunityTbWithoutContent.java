@@ -20,6 +20,7 @@ public class QCommunityTbWithoutContent extends EntityPathBase<com.example.sprin
         public final NumberPath<Integer> hits = createNumber("hits", Integer.class);
         public final NumberPath<Double> get_coin =  createNumber("get_coin", double.class);
         public final BooleanPath highlight = createBoolean("highlight");
+        public final BooleanPath state = createBoolean("state");
 
         public QCommunityTbWithoutContent(String variable) {
 

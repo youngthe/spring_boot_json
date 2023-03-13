@@ -19,7 +19,6 @@ public class TestContent {
     @Column(name = "title")
     private String title;
 
-
     @Column(name = "date")
     private Date date;
 
@@ -40,4 +39,7 @@ public class TestContent {
 
     @Column(name = "comment_allow")
     private boolean comment_allow;
+
+    @Column(name = "state")
+    private boolean state;
 }

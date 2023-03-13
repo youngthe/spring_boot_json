@@ -41,7 +41,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
 
         return query
                 .select(qCommunityTb.community_id, qCommunityTb.title, qCommunityTb.hits,qCommunityTb.category, qCommunityTb.date,
-                        qCommunityTb.highlight, qCommunityTb.user_id, qCommunityTb.get_coin)
+                        qCommunityTb.highlight, qCommunityTb.user_id, qCommunityTb.get_coin, qCommunityTb.state)
                 .where(qCommunityTb.title.startsWith(title))
                 .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
@@ -88,6 +88,7 @@ public class CommunityTbRepositoryCustomImpl extends QuerydslRepositorySupport i
         return query
                 .selectFrom(qCommunityTb)
                 .where(qCommunityTb.category.eq(category))
+                .where(qCommunityTb.state.eq(true))
                 .orderBy(qCommunityTb.community_id.desc())
                 .fetch();
     }
