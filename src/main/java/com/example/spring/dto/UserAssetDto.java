@@ -27,7 +27,7 @@ public class UserAssetDto {
         System.out.println(usertb.getCoin());
         System.out.println(stakingTb.getAdd_amount());
         System.out.println(stakingTb.getStart_amount());
-        this.usable_coin = usertb.getCoin() + stakingTb.getAdd_amount();
+        this.usable_coin = usertb.getCoin();
         this.staking_coin = stakingTb.getStart_amount();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.expire_date = format.format(stakingTb.getExpire_date());

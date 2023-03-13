@@ -1,9 +1,12 @@
 package com.example.spring.utils;
 
 import com.example.spring.Abi;
+import com.example.spring.dao.CoinPushHistoryTb;
 import com.example.spring.dao.LoginHistoryTb;
 import com.example.spring.dao.StakingTb;
 import com.example.spring.dao.UserTb;
+import com.example.spring.dto.CoinpushDto;
+import com.example.spring.repository.CoinPushHistoryRepository;
 import com.example.spring.repository.LoginHistoryRepository;
 import com.example.spring.repository.StakingRepository;
 import com.example.spring.repository.UserRepository;
@@ -41,6 +44,9 @@ public class ScheduleTest {
     @Autowired
     private LoginHistoryRepository loginHistoryRepository;
 
+    @Autowired
+    private CoinPushHistoryRepository coinPushHistoryRepository;
+
 //    @Scheduled(fixedRate = 1000000)
     @Scheduled(cron = "0 0 0 * * ?")
     public void scheduleFixedRateWithInitialDelayTask() throws Exception {
@@ -51,34 +57,7 @@ public class ScheduleTest {
             Date now = new Date();
 
             if(now.after(stakingTbList.get(i).getExpire_date())){
-                System.out.println("staking "+ stakingTbList.get(i).getStaking_id() + " is done ");
-
-                if(stakingTbList.get(i).getUser_id() == 0){
-
-                    System.out.println("web3j start");
-                    BigDecimal number1 = BigDecimal.valueOf(stakingTbList.get(i).getReward_amount());
-
-                    stakingTbList.get(i).setState(false);
-                    stakingTbList.get(i).setRelease_date(now);
-                    stakingRepository.save( stakingTbList.get(i));
-
-                    Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
-
-                    ContractGasProvider gasProvider = new DefaultGasProvider();
-                    BigInteger gasPrice = Convert.toWei("250", Convert.Unit.GWEI).toBigInteger();
-                    BigInteger GasLimit = BigInteger.valueOf(30000000L);
-                    String contractAddress = "0x981AeB68B7A9d1B3d9341636D0f45660995C6Af5";
-                    EthGasPrice ethGasPrice = web3j.ethGasPrice().send();
-                    System.out.println("eth :" + ethGasPrice.getGasPrice());
-                    File file = new File("./UTC--2023-02-28T06-22-54.425506000Z--87e02340c9c5dab434d2e9f5cdbc3da06b8f47da.json");
-                    Credentials credentials = WalletUtils.loadCredentials("test", file);
-
-                    Abi abi = Abi.load(contractAddress, web3j, credentials, gasPrice, GasLimit);
-
-                    BigInteger value = Convert.toWei(number1.toString(), Convert.Unit.ETHER).toBigInteger();
-                    abi.transfer(stakingTbList.get(i).getWallet_address(), value).send();
-                }else{
-                    System.out.println("user wallet add start");
+                    System.out.println("user coin add start");
                     UserTb user = userRepository.getUserTbByUserId(stakingTbList.get(i).getUser_id());
                     double reward_amount = stakingTbList.get(i).getReward_amount();
 
@@ -89,9 +68,6 @@ public class ScheduleTest {
                     BigDecimal number2 = BigDecimal.valueOf(reward_amount);
                     user.setCoin(number1.add(number2).doubleValue());
                     userRepository.save(user);
-
-                }
-
             }
 
         }
@@ -101,24 +77,40 @@ public class ScheduleTest {
     //00시마다 작동하는 스케쥴러
     @Scheduled(cron = "0 0 0 * * ?")
     public void TimeScaduler() throws Exception {
-        Date date = new Date();
+        Date now = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-        System.out.println(format.format(date));
+        System.out.println(format.format(now));
 
+            //금일 방문자 레코드 생성
             LoginHistoryTb loginHistoryTb = new LoginHistoryTb();
-            loginHistoryTb.setDate(format.format(date));
+            loginHistoryTb.setDate(format.format(now));
             loginHistoryTb.setCount(0);
             loginHistoryRepository.save(loginHistoryTb);
 
+            //스테이킹 이자 지급
             List<StakingTb> stakingTbList = stakingRepository.getStakingTbThatStateTrue();
-
             for(int i=0;i<stakingTbList.size();i++){
                 BigDecimal number1 = BigDecimal.valueOf(stakingTbList.get(i).getStart_amount());
                 BigDecimal number2 = new BigDecimal("0.1");
-                stakingTbList.get(i).setAdd_amount(number1.multiply(number2).doubleValue());
+                double add_coin = number1.multiply(number2).doubleValue();
+                stakingTbList.get(i).setAdd_amount(add_coin);
                 stakingRepository.save(stakingTbList.get(i));
-            }
 
+                CoinPushHistoryTb coinPushHistoryTb = new CoinPushHistoryTb();
+                coinPushHistoryTb.setCoin(add_coin);
+                coinPushHistoryTb.setGiver(0);
+                coinPushHistoryTb.setReceiver(stakingTbList.get(i).getUser_id());
+                coinPushHistoryTb.setDate(now);
+                coinPushHistoryTb.setType(3);
+                coinPushHistoryRepository.save(coinPushHistoryTb);
+
+                UserTb userTb = userRepository.getUserTbByUserId(stakingTbList.get(i).getUser_id());
+
+                BigDecimal number3 = BigDecimal.valueOf(add_coin);
+                BigDecimal number4 = BigDecimal.valueOf(userTb.getCoin());
+                userTb.setCoin(number3.add(number4).doubleValue());
+                userRepository.save(userTb);
+            }
     }
 
 }

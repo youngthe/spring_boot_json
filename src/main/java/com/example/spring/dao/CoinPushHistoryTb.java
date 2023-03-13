@@ -28,4 +28,11 @@ public class CoinPushHistoryTb {
     @Column(name = "coin")
     private double coin;
 
+    @Column(name = "community_id")
+    private int community_id;
+
+    //1. 꽃달기, 2. 응원하기, 3. 이자 지급
+    @Column(name = "type")
+    private int type;
+
 }
