@@ -2,7 +2,9 @@ package com.example.spring.controller;
 
 import com.example.spring.Abi;
 import com.example.spring.dao.*;
+import com.example.spring.dto.CategoryDto;
 import com.example.spring.dto.UserAssetDto;
+import com.example.spring.dto.UserDto;
 import com.example.spring.repository.*;
 import com.example.spring.utils.JwtTokenProvider;
 import io.swagger.annotations.ApiImplicitParam;
@@ -26,10 +28,7 @@ import org.web3j.utils.Convert;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @RestController
@@ -131,7 +130,7 @@ public class AdminController {
                 userTb.setName(name);
                 userTb.setRole("admin");
                 userTb.setState(true);
-                userTb.setDate(now);
+                userTb.setCreate_date(now);
                 userTb.setCoin(0);
                 userRepository.save(userTb);
                 result.put("resultCode", "true");
@@ -267,6 +266,13 @@ public class AdminController {
     public HashMap admin_delete(@RequestHeader("token") String tokenHeader, @PathVariable("asking_id") int asking_id){
 
         HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         UserTb usertb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
 
         if(!usertb.getRole().equals("admin")){
@@ -298,6 +304,12 @@ public class AdminController {
     public HashMap balance(@RequestHeader("token") String tokenHeader) throws Exception {
 
         HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
 
         Web3j web3j = Web3j.build(new HttpService("https://api.baobab.klaytn.net:8651"));
 
@@ -338,6 +350,12 @@ public class AdminController {
 
         HashMap<String,Object> result = new HashMap<>();
 
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
             result.put("message", "not admin");
@@ -346,8 +364,14 @@ public class AdminController {
         }
 
         List<UserTb> user_list =  userRepository.getUserTbByRole("user");
+        List<UserDto> userDtos = new ArrayList<>();
 
-        result.put("user_list", user_list);
+        for(int i=0;i<user_list.size();i++){
+            UserDto userDto = new UserDto(user_list.get(i));
+            userDtos.add(userDto);
+        }
+
+        result.put("user_list", userDtos);
         return result;
     }
 
@@ -362,6 +386,13 @@ public class AdminController {
     public HashMap deactivation(@RequestHeader("token") String tokenHeader, @PathVariable("user_id") int user_id) throws Exception {
 
         HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
 
         UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!userTb.getRole().equals("admin")){
@@ -401,6 +432,13 @@ public class AdminController {
         HashMap<String,Object> result = new HashMap<>();
 
         try{
+
+            if(!jwtTokenProvider.validateToken(tokenHeader)){
+                result.put("message", "Token validate");
+                result.put("resultCode", "false");
+                return result;
+            }
+
             UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
             if(!userTb.getRole().equals("admin")){
                 result.put("message", "not admin");
@@ -420,48 +458,6 @@ public class AdminController {
 
     }
 
-    @ApiOperation(value = "회원 조회 - 회원 비밀번호 강제 변경", notes = "관리자가 회원의 비밀번호를 변경할 수 있는 엔드포인트")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "pw", value = "변경할 비밀번호", required = true),
-    })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "resultCode")
-    })
-    @RequestMapping(value="/admin/account/{user_id}", method = RequestMethod.PATCH)
-    public HashMap change_password(@RequestHeader("token") String tokenHeader, @RequestBody HashMap<String, Object> data, @PathVariable("user_id") int user_id) throws Exception {
-
-        HashMap<String,Object> result = new HashMap<>();
-
-
-        UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
-        if(!userTb.getRole().equals("admin")){
-            result.put("message", "not admin");
-            result.put("resultCode","false");
-            return result;
-        }
-
-        if(ObjectUtils.isEmpty(data.get("pw"))){
-            result.put("message", "pw is null");
-            result.put("resultCode", "false");
-            return result;
-        }
-
-        String password = data.get("pw").toString();
-
-
-        try{
-            UserTb user = userRepository.getUserTbByUserId(user_id);
-            user.setPw(passwordEncoder.encode(password));
-            userRepository.save(user);
-            result.put("resultCode","true");
-            return result;
-
-        }catch(Exception e){
-            result.put("message", "db error");
-            result.put("resultCode", "false");
-            return result;
-        }
-    }
 
     @ApiOperation(value = "회원 조회 - 회원 자산 리스트 조회", notes = "")
     @ApiImplicitParams({
@@ -473,6 +469,12 @@ public class AdminController {
     public HashMap asset(@RequestHeader("token") String tokenHeader, @PathVariable("user_id") int user_id) throws Exception {
 
         HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
 
         UserTb userTb = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!userTb.getRole().equals("admin")){
@@ -523,6 +525,12 @@ public class AdminController {
             return result;
         }
 
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
             result.put("message", "not admin");
@@ -566,6 +574,12 @@ public class AdminController {
 
         HashMap<String,Object> result = new HashMap<>();
 
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         if(ObjectUtils.isEmpty(data.get("user_id"))){
             result.put("message", "user_id is null");
             result.put("resultCode", "false");
@@ -579,6 +593,7 @@ public class AdminController {
 
         int user_id = Integer.parseInt(data.get("user_id").toString());
         double coin = Double.parseDouble(data.get("coin").toString());
+
 
         UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
@@ -625,6 +640,12 @@ public class AdminController {
 
         HashMap<String,Object> result = new HashMap<>();
 
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
 
         UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
@@ -656,6 +677,12 @@ public class AdminController {
 
         HashMap<String,Object> result = new HashMap<>();
 
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
         UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
         if(!user.getRole().equals("admin")){
             result.put("message", "not admin");
@@ -675,6 +702,226 @@ public class AdminController {
             result.put("resultCode", "true");
             return result;
         } catch (Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "현재 로그인된 관리자 계정 비밀번호 변경", notes = "비밀번호 변경")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "pw", value = "변경할 패스워드", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/setting", method = RequestMethod.PATCH)
+    public HashMap community_blind(@RequestHeader("token") String tokenHeader, @RequestBody HashMap<String, Object> data){
+
+        HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("pw"))){
+            result.put("message", "pw is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String pw = data.get("pw").toString();
+
+        try{
+            user.setPw(passwordEncoder.encode(pw));
+            userRepository.save(user);
+            result.put("resultCode", "true");
+            return result;
+        } catch (Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "메인 카테고리 생성", notes = "카테고리 생성")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "name", value = "카테고리 이름", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/category", method = RequestMethod.POST)
+    public HashMap create_category(@RequestHeader("token") String tokenHeader, @RequestBody HashMap<String, Object> data){
+
+        HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("name"))){
+            result.put("message", "name is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String category_name = data.get("name").toString();
+
+        try{
+            CategoryTb categoryTb = new CategoryTb();
+            categoryTb.setCategory_name(category_name);
+            categoryTb.setParent(0);
+            categoryRepository.save(categoryTb);
+            result.put("resultCode", "true");
+            return result;
+        } catch (Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "서브 카테고리 생성", notes = "URL에 있는 category_id를 부모로 하는 서브(자녀) 카테고리 생성")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "name", value = "카테고리 이름", required = true),
+    })
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/category/{category_id}", method = RequestMethod.POST)
+    public HashMap create_category(@RequestHeader("token") String tokenHeader, @RequestBody HashMap<String, Object> data, @PathVariable("category_id") int parent_id){
+
+        HashMap<String,Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        if(ObjectUtils.isEmpty(data.get("name"))){
+            result.put("message", "name is null");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        String category_name = data.get("name").toString();
+
+        try{
+            CategoryTb categoryTb = new CategoryTb();
+            categoryTb.setCategory_name(category_name);
+            categoryTb.setParent(parent_id);
+            categoryRepository.save(categoryTb);
+            result.put("resultCode", "true");
+            return result;
+        } catch (Exception e){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "카테고리 조회하기", notes = "카테고리 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/category", method = RequestMethod.GET)
+    public HashMap get_cateogry(@RequestHeader("token") String tokenHeader){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        try{
+
+            List<CategoryTb> mainCategory = categoryRepository.getCategoryParent();
+            List<CategoryDto> categoryDtoList = new ArrayList<>();
+
+            for(int i=0;i<mainCategory.size();i++){
+                List<CategoryTb> subCategory = categoryRepository.getCategoryChildByParent(mainCategory.get(i).getCategory_id());
+                CategoryDto categoryDto = new CategoryDto(mainCategory.get(i), subCategory);
+                categoryDtoList.add(categoryDto);
+            }
+
+            result.put("category_list", categoryDtoList);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e ){
+            result.put("message", "db error");
+            result.put("resultCode", "false");
+            return result;
+        }
+    }
+
+    @ApiOperation(value = "카테고리 삭제", notes = "카테고리 조회")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "resultCode")
+    })
+    @RequestMapping(value="/admin/category/{category_id}", method = RequestMethod.DELETE)
+    public HashMap get_cateogry(@RequestHeader("token") String tokenHeader, @PathVariable("category_id") int category_id){
+
+        HashMap<String, Object> result = new HashMap<>();
+
+        if(!jwtTokenProvider.validateToken(tokenHeader)){
+            result.put("message", "Token validate");
+            result.put("resultCode", "false");
+            return result;
+        }
+
+        UserTb user = userRepository.getUserTbByUserId(jwtTokenProvider.getUserId(tokenHeader));
+        if(!user.getRole().equals("admin")){
+            result.put("message", "not admin");
+            result.put("resultCode","false");
+            return result;
+        }
+
+        try{
+
+            CategoryTb categoryTb = categoryRepository.getReferenceById(category_id);
+            System.out.println(categoryTb.getCategory_name());
+            categoryRepository.delete(categoryTb);
+            result.put("resultCode", "true");
+            return result;
+
+        }catch (Exception e ){
             result.put("message", "db error");
             result.put("resultCode", "false");
             return result;

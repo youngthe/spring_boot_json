@@ -117,9 +117,11 @@ public class HomeController {
                     result.put("resultCode", "false");
                     return result;
                 }else{
+                    Date now = new Date();
+                    user.setLast_login_date(now);
+                    userRepository.save(user);
                     result.put("resultCode", "true");
                     result.put("jwt", jwtTokenProvider.createToken(user));
-                    LoginHistoryTb loginHistoryTb = new LoginHistoryTb();
                 }
 
 //                Date date = new Date();
@@ -212,7 +214,7 @@ public class HomeController {
                 userTb.setRole("user");
                 userTb.setCoin(0);
                 userTb.setState(true);
-                userTb.setDate(now);
+                userTb.setCreate_date(now);
                 userRepository.save(userTb);
                 result.put("resultCode", "true");
                 return result;

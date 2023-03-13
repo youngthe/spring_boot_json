@@ -37,6 +37,9 @@ public class UserTb {
     private boolean state;
 
     @Column()
-    private Date date;
+    private Date create_date;
+
+    @Column()
+    private Date last_login_date;
 
 }
